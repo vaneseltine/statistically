@@ -1,5 +1,4 @@
 pytest
 coverage
 coveralls[yaml]
-
 -r requirements.txt
