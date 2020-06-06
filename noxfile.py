@@ -2,6 +2,7 @@
 """Invoke via `nox` or `python -m nox`"""
 
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -12,6 +13,7 @@ nox.options.stop_on_first_error = True
 PACKAGE_NAME = "statistically"
 MODULE_DEFINING_VERSION = "./statistically/statistically.py"
 VERSION_PATTERN = r"(\d+\.\d+\.[0-9a-z_-]+)"
+DIST_DIR = Path("./dist/")
 
 
 def supported_pythons(classifiers_in="setup.cfg"):
@@ -142,8 +144,10 @@ def deploy_to_pypi(session):
     if not pypi_needs_new_version():
         session.skip("PyPI already up to date")
     print("Current version is ready to deploy to PyPI.")
-    session.run("python", "setup.py", "sdist", "bdist_wheel")
-    session.run("python", "-m", "twine", "upload", "dist/*")
+    shutil.rmtree(DIST_DIR, ignore_errors=True)
+    DIST_DIR.mkdir()
+    session.run("python", "setup.py", "sdist", "bdist_wheel", f"--dist-dir={DIST_DIR}")
+    session.run("python", "-m", "twine", "upload", str(DIST_DIR.joinpath("*")))
 
 
 @nox.session(python=False)
