@@ -18,7 +18,7 @@
   </a>
 </p>
 
-*statistically* is an empty-featured -- that is, the opposite of full-featured -- Stata output parser.
+*statistically* is a Stata output parser. It's currently a rounding error away from useless.
 
 ### 🧙‍ Author
 
