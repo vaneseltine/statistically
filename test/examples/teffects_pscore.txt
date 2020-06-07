@@ -1,0 +1,12 @@
+Treatment-effects estimation                   Number of obs      =     50,829
+Estimator      : propensity-score matching     Matches: requested =          4
+Outcome model  : matching                                     min =          4
+Treatment model: logit                                        max =          4
+------------------------------------------------------------------------------
+             |              AI Robust
+one_n_agen~s |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+ATET         |
+           t |
+   (1 vs 0)  |   .0127119   .0561976     0.23   0.821    -.0974334    .1228571
+------------------------------------------------------------------------------
