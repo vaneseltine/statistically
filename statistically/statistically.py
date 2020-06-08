@@ -164,8 +164,9 @@ class Log:
         self.outputs = []
         self.parse()
 
-    def import_text(self, raw):
-        return [line.rstrip() for line in raw.splitlines()]
+    @staticmethod
+    def import_text(raw_text):
+        return [line.rstrip() for line in raw_text.splitlines()]
 
     @classmethod
     def from_path(cls, path):
@@ -175,7 +176,6 @@ class Log:
         line = 0
         while line is not None and line < len(self.text):
             line = self.advance_line(line)
-        return self.outputs
 
     def advance_line(self, line):
         handler = Output.find_handler(self.text[line])
@@ -223,10 +223,12 @@ def check_cli_only() -> bool:
     return False
 
 
-def report_version() -> None:
-    package = f"statistically {__version__} at {Path(__file__).parent.absolute()}"
-    py_version = f"on Python {sys.version.split(' ')[0]} at {sys.executable}"
-    print(f"{package}\n{py_version}")
+def input_from_args() -> UserInput:
+    """
+    Just smash together all arguments from the command line.
+    """
+    command_line_input: UserInput = " ".join(sys.argv[1:])
+    return command_line_input
 
 
 def report_help() -> None:
@@ -236,12 +238,10 @@ def report_help() -> None:
     print("Try: statistically blah.log")
 
 
-def input_from_args() -> UserInput:
-    """
-    Just smash together all arguments from the command line.
-    """
-    command_line_input: UserInput = " ".join(sys.argv[1:])
-    return command_line_input
+def report_version() -> None:
+    package = f"statistically {__version__} at {Path(__file__).parent.absolute()}"
+    py_version = f"on Python {sys.version.split(' ')[0]} at {sys.executable}"
+    print(f"{package}\n{py_version}")
 
 
 if __name__ == "__main__":
