@@ -18,8 +18,8 @@ class Output:
     header_is_in_table = False
 
     def __init__(self, raw, header):
-        # A bit hacky, but makes things a lot easier if we force a blank line
         self.raw = raw + [""]
+        # print(repr(self.raw))
         if self.header_is_in_table:
             header += 1
         self.start = header
@@ -28,9 +28,12 @@ class Output:
         self.end = self.table_end + 1 + self.footer_length
         self.lines = self.raw[self.start : self.end]
         print(
-            f"head {self.start}, table, {self.table_start}, footer, {self.table_end + 1}, end, {self.end}"
+            f"head {self.start},",
+            f"table, {self.table_start},",
+            f"footer, {self.table_end + 1},",
+            f"end, {self.end}",
         )
-        print("all", len(self.lines), sep="\n")
+        # print("all", len(self.lines), sep="\n")
         self.raw_header = self.raw[self.start : self.table_start]
         self.raw_table = self.raw[self.table_start : self.table_end + 1]
         self.raw_footer = self.raw[self.table_end + 1 : self.end]
@@ -42,32 +45,26 @@ class Output:
             print(*("    " + x for x in getattr(self, attr)), sep="\n")
         print(self, "end")
 
-    @property
-    def rows(self):
-        return self._get_rows()
-
-    def _get_rows(self):
-        useful = [x.strip() for x in self.raw_table if re.match(r".*\d$", x)]
-        split_rows = [re.split(r"[ \|]+", row) for row in useful]
-        return split_rows
-
     @classmethod
     def find_next(cls, s):
         for subc in cls.members:
             if subc.first_line.match(s):
-                print(subc, s)
+                # print(subc, s)
                 return subc
         return None
 
     def find_table_end(self, table_start):
         i = table_start + self.minimum_length
-        while i is not None and i <= len(self.raw):
-            print("looking for end of table", i, self.raw[i])
+        while i is not None and i < len(self.raw):
+            # print(i)
+            # print(len(self.raw), repr(self.raw))
+            # print("looking for end of table", i, self.raw[i])
             if self.end_table_pattern.match(self.raw[i]):
-                print("got it")
+                # print("got it")
                 return i
             i += 1
-        raise RuntimeError("Coudln't find elnds")
+        # raise RuntimeWarning("Could not find end of table, got to end of file")
+        return len(self.raw) - 1
 
     def __len__(self):
         return len(self.lines)
@@ -99,6 +96,7 @@ class Reg(Output):
 class Summarize(Output):
     header_length = 1
     first_line = re.compile(r"^    Variable \|        Obs")
+    end_table_pattern = re.compile(r"^$")
 
 
 class TabStat(Output):
@@ -142,14 +140,17 @@ class Log:
 
     table_start = re.compile(r"^\s*[ -]+$")
 
-    def __init__(self, path):
-        self.path = Path(path)
-        self.text = self.import_text()
+    def __init__(self, text):
+        self.text = self.import_text(text)
         self.outputs = []
+        self.parse()
 
-    def import_text(self, path=None):
-        path = path or self.path
-        return [line.rstrip() for line in path.read_text().splitlines()]
+    def import_text(self, raw):
+        return [line.rstrip() for line in raw.splitlines()]
+
+    @classmethod
+    def from_path(cls, path):
+        return cls(Path(path).read_text())
 
     def parse(self):
         line = 0
@@ -182,13 +183,12 @@ def main() -> int:
     else:
         path = Path(r"./test/examples/members.log")
     assert path.exists()
-    log = Log(path)
-    outputs = log.parse()
-    for output in outputs:
+    log = Log.from_path(path)
+    for output in log.outputs:
         output.report()
-    print(*[[o, len(o.raw_table)] for o in outputs])
+    print(*[[o, len(o.raw_table)] for o in log.outputs])
 
-    print(f"{len(outputs)} tables")
+    print(f"{len(log.outputs)} tables")
 
     return 0
 
