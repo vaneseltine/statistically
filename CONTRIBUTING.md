@@ -18,7 +18,7 @@ Please follow statistically's Code of Conduct in all project interactions.
     $ cd statistically
     $ python -m venv .venv
     $ source ./.venv/bin/activate
-    (.venv) $ python -m pip install -U pip -r requirements.txt
+    (.venv) $ python -m pip install -U pip -r requirements-test.txt
     (.venv) $ git checkout -b informative-branch-name
     (.venv) $ nox
     ```
