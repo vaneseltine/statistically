@@ -1,7 +1,10 @@
 """An empty-featured Stata output scraper/parser."""
+import locale
 import re
 import sys
 from pathlib import Path
+
+locale.setlocale(locale.LC_ALL, "en_US.UTF8")
 
 __version__ = "0.0.4"
 
@@ -18,8 +21,9 @@ class Output:
     header_is_in_table = False
 
     def __init__(self, raw, header):
+        self.results = dict()
         self.raw = raw + [""]
-        # print(repr(self.raw))
+        self.full_text = "\n".join(self.raw)
         if self.header_is_in_table:
             header += 1
         self.start = header
@@ -33,10 +37,25 @@ class Output:
             f"footer, {self.table_end + 1},",
             f"end, {self.end}",
         )
-        # print("all", len(self.lines), sep="\n")
         self.raw_header = self.raw[self.start : self.table_start]
         self.raw_table = self.raw[self.table_start : self.table_end + 1]
         self.raw_footer = self.raw[self.table_end + 1 : self.end]
+        self.parse_results()
+
+    def parse_results(self):
+        self.results["n"] = self.parse_n(self.full_text)
+
+    @staticmethod
+    def parse_n(text):
+        print(text)
+        obs_match = re.search(r"Number of obs[\s=]+([\d,]+)", text)
+        if not obs_match:
+            return None
+        return locale.atoi(obs_match.group(1))
+
+    @property
+    def n(self):
+        return self.results["n"]
 
     def report(self):
         print(self, "start")
@@ -46,7 +65,7 @@ class Output:
         print(self, "end")
 
     @classmethod
-    def find_next(cls, s):
+    def find_handler(cls, s):
         for subc in cls.members:
             if subc.first_line.match(s):
                 # print(subc, s)
@@ -159,7 +178,7 @@ class Log:
         return self.outputs
 
     def advance_line(self, line):
-        handler = Output.find_next(self.text[line])
+        handler = Output.find_handler(self.text[line])
         if handler is None:
             return line + 1
         output = handler(self.text, line)
@@ -170,7 +189,7 @@ class Log:
         return len(self.text)
 
     def __str__(self):
-        return f'{self.__class__.__name__}("{self.path}")'
+        return f'{self.__class__.__name__}("something or other")'
 
 
 def main() -> int:
