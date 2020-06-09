@@ -37,5 +37,30 @@ class TestMargins:
     def t_thing_loads_probably(self):
         assert len(self.log.outputs) == 1
 
-    def t_n(self):
-        assert self.output.n == 2395
+    def t_stats(self):
+        assert self.output.results["n"] == self.output.n == 2395
+
+    def t_table_length(self):
+        assert len(self.output.table) == 2
+
+    @pytest.mark.parametrize(
+        "row, cell, value",
+        [
+            (0, "value", 0),
+            (0, "margin", 1.926662,),
+            (0, "std_err", 0.0332418,),
+            (0, "z", 57.96,),
+            (0, "p_z", 0.0,),
+            (0, "ci_lo", 1.861509,),
+            (0, "ci_hi", 1.991815,),
+            (1, "value", 1),
+            (1, "margin", 2.045452,),
+            (1, "std_err", 0.0635479,),
+            (1, "z", 32.19,),
+            (1, "p_z", 0.0,),
+            (1, "ci_lo", 1.9209,),
+            (1, "ci_hi", 2.170003,),
+        ],
+    )
+    def t_table_cells(self, row, cell, value):
+        assert self.output.table[row][cell] == value

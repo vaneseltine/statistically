@@ -1,5 +1,6 @@
 """An empty-featured Stata output scraper/parser."""
 import locale
+import logging
 import re
 import sys
 from pathlib import Path
@@ -20,12 +21,15 @@ class Output:
     end_table_pattern = re.compile(r"^\s{0,3}-+$")
     header_is_in_table = False
 
-    def __init__(self, raw, header):
+    def __init__(self, raw, header, logger=None):
+        self.logger = logger or logging.getLogger(__name__)
+
         self.results = dict()
+        self.table = None
         self.raw = raw + [""]
         self.full_text = "\n".join(self.raw)
         if self.header_is_in_table:
-            header += 1
+            header -= 1
         self.start = header
         self.table_start = self.start + self.header_length
         self.table_end = self.find_table_end(self.table_start)
@@ -43,11 +47,15 @@ class Output:
         self.parse_results()
 
     def parse_results(self):
+        self.table = self.construct_table()
         self.results["n"] = self.parse_n(self.full_text)
+
+    def construct_table(self):
+        self.logger.debug(f"Not implemented for {self.__class__}")
+        return None
 
     @staticmethod
     def parse_n(text):
-        print(text)
         obs_match = re.search(r"Number of obs[\s=]+([\d,]+)", text)
         if not obs_match:
             return None
@@ -62,11 +70,16 @@ class Output:
         for attr in ("raw_header", "raw_table", "raw_footer"):
             print("    " + attr, "~" * 80)
             print(*("    " + x for x in getattr(self, attr)), sep="\n")
+        print(f"{'key':<20} value")
+        for k, v in self.results.items():
+            print(f"{k:<20} {v}")
+        for row in self.table:
+            print(row)
         print(self, "end")
 
     @classmethod
     def find_handler(cls, s):
-        for subc in cls.members:
+        for subc in cls.__subclasses__():
             if subc.first_line.match(s):
                 # print(subc, s)
                 return subc
@@ -89,7 +102,7 @@ class Output:
         return len(self.lines)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.start}--{self.end})"
+        return f"{self.__class__.__name__}({self.start}-{self.end})"
 
 
 class Logistic(Output):
@@ -100,6 +113,32 @@ class Logistic(Output):
 class Margins(Output):
     header_length = 5
     first_line = re.compile(r"^Predictive margins\s+Number of obs\s+=")
+    row_divider_pattern = re.compile(r"^[-+ ]+$")
+    row_data_pattern = re.compile(r"[^-\d,+.]+")
+    row_treatment_pattern = re.compile(r"[\w]+\s+\|$")
+    skippable = re.compile(r"(\-\-\-)|Delta-method|(95% Conf. Interval)|(^[ \|]+$)")
+    data_columns = "value margin std_err z p_z ci_lo ci_hi".split()
+
+    def construct_table(self):
+        pre_table = [self.add_row(i, row) for i, row in enumerate(self.raw_table)]
+        return [row for row in pre_table if row]
+
+    def add_row(self, i, row):
+        row = row.strip()
+        if self.row_divider_pattern.match(row):
+            return None
+        if self.skippable.search(row):
+            return None
+        print(row)
+        if self.row_treatment_pattern.match(row):
+            print(self.row_treatment_pattern.match(row))
+            return None
+        values = self.row_data_pattern.split(row)
+        result_dict = {
+            k: locale.atof(values[i]) for i, k in enumerate(self.data_columns)
+        }
+        result_dict["line"] = i
+        return result_dict
 
 
 class Poisson(Output):
@@ -116,6 +155,7 @@ class Summarize(Output):
     header_length = 1
     first_line = re.compile(r"^    Variable \|        Obs")
     end_table_pattern = re.compile(r"^$")
+    header_is_in_table = True
 
 
 class TabStat(Output):
@@ -141,26 +181,14 @@ class TTest(Output):
     first_line = re.compile(r"^Two-sample t test with equal variances$")
 
 
-Output.members = [
-    Logistic,
-    Margins,
-    Poisson,
-    Reg,
-    Summarize,
-    TabStat,
-    TEBalance,
-    TEffectsEstimation,
-    TTest,
-]
-
-
 class Log:
     """A full Stata log, parsable into separate Outputs"""
 
     table_start = re.compile(r"^\s*[ -]+$")
 
-    def __init__(self, text):
+    def __init__(self, text, logger=None):
         self.text = self.import_text(text)
+        self.logger = logger
         self.outputs = []
         self.parse()
 
@@ -181,7 +209,7 @@ class Log:
         handler = Output.find_handler(self.text[line])
         if handler is None:
             return line + 1
-        output = handler(self.text, line)
+        output = handler(self.text, line, logger=self.logger)
         self.outputs.append(output)
         return output.end
 
@@ -193,10 +221,12 @@ class Log:
 
 
 def main() -> int:
+    logger = get_statistically_logger()
+
     if check_cli_only():
         return 0
     raw_input = input_from_args()
-    print("Raw input", repr(raw_input))
+    logger.debug(f"Raw input {raw_input!r}")
     if raw_input:
         path = Path(raw_input)
     else:
@@ -205,9 +235,7 @@ def main() -> int:
     log = Log.from_path(path)
     for output in log.outputs:
         output.report()
-    print(*[[o, len(o.raw_table)] for o in log.outputs])
-
-    print(f"{len(log.outputs)} tables")
+    logger.debug(f"Total table count: {len(log.outputs)}")
 
     return 0
 
@@ -242,6 +270,33 @@ def report_version() -> None:
     package = f"statistically {__version__} at {Path(__file__).parent.absolute()}"
     py_version = f"on Python {sys.version.split(' ')[0]} at {sys.executable}"
     print(f"{package}\n{py_version}")
+
+
+def get_statistically_logger(log_file=None):
+    """
+
+    Another option:
+        sfmt="{asctime} {levelname:>7} {message}", style="{", datefmt=r"%H:%M:%S"
+    """
+
+    formatter = logging.Formatter(
+        fmt="{asctime} {name:<20} {lineno:>3}:{levelname:<7} {message}",
+        style="{",
+        datefmt=r"%Y%m%d-%H%M%S",
+    )
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setFormatter(formatter)
+    handlers = [stream_handler]
+    if log_file is not None:
+        file_handler = logging.FileHandler(filename=log_file)
+        file_handler.setFormatter(formatter)
+        handlers.append(file_handler)
+    logging.basicConfig(level=logging.DEBUG, handlers=handlers)
+
+    new_logger = logging.getLogger(__name__)
+    if log_file:
+        new_logger.debug(f"Logging to {log_file}")
+    return new_logger
 
 
 if __name__ == "__main__":
