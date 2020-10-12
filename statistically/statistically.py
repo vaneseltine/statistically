@@ -117,9 +117,16 @@ class Margins(Output):
     row_treatment_pattern = re.compile(r"[\w]+\s+\|$")
     skippable = re.compile(r"(\-\-\-)|Delta-method|(95% Conf. Interval)|(^[ \|]+$)")
     data_columns = "value margin std_err z p_z ci_lo ci_hi".split()
+    _table = None
 
     @property
     def table(self):
+        if self._table is not None:
+            return self._table
+        self._table = self.construct_table()
+        return self.table
+
+    def construct_table(self):
         pre_table = [self.add_row(i, row) for i, row in enumerate(self.raw_table)]
         return [row for row in pre_table if row]
 
