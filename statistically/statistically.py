@@ -23,9 +23,7 @@ class Output:
 
     def __init__(self, raw, header, logger=None):
         self.logger = logger or logging.getLogger(__name__)
-
         self.results = dict()
-        self.table = None
         self.raw = raw + [""]
         self.full_text = "\n".join(self.raw)
         if self.header_is_in_table:
@@ -47,12 +45,11 @@ class Output:
         self.parse_results()
 
     def parse_results(self):
-        self.table = self.construct_table()
         self.results["n"] = self.parse_n(self.full_text)
 
-    def construct_table(self):
-        self.logger.debug(f"Not implemented for {self.__class__}")
-        return None
+    @property
+    def table(self):
+        return []
 
     @staticmethod
     def parse_n(text):
@@ -121,7 +118,8 @@ class Margins(Output):
     skippable = re.compile(r"(\-\-\-)|Delta-method|(95% Conf. Interval)|(^[ \|]+$)")
     data_columns = "value margin std_err z p_z ci_lo ci_hi".split()
 
-    def construct_table(self):
+    @property
+    def table(self):
         pre_table = [self.add_row(i, row) for i, row in enumerate(self.raw_table)]
         return [row for row in pre_table if row]
 
