@@ -252,7 +252,7 @@ def main() -> int:
 
 def check_cli_only() -> bool:
     args = sys.argv[1:]
-    if "-h" in args or "--help" in args:
+    if not args or "-h" in args or "--help" in args:
         report_help()
         return True
     if "-V" in args or "--version" in args:
