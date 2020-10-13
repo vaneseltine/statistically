@@ -113,10 +113,11 @@ class Margins(Output):
     header_length = 5
     first_line = re.compile(r"^Predictive margins\s+Number of obs\s+=")
     row_divider_pattern = re.compile(r"^[-+ ]+$")
-    row_data_pattern = re.compile(r"[^-\d,+.]+")
+    row_data_pattern = re.compile(r"[^-\w,+.]+")
     row_treatment_pattern = re.compile(r"[\w]+\s+\|$")
     skippable = re.compile(r"(\-\-\-)|Delta-method|(95% Conf. Interval)|(^[ \|]+$)")
-    data_columns = "value margin std_err z p_z ci_lo ci_hi".split()
+    columns = "value margin std_err z p_z ci_lo ci_hi".split()
+    columns_float = [False, True, True, True, True, True, True]
     _table = None
 
     @property
@@ -141,11 +142,22 @@ class Margins(Output):
             print(self.row_treatment_pattern.match(row))
             return None
         values = self.row_data_pattern.split(row)
-        result_dict = {
-            k: locale.atof(values[i]) for i, k in enumerate(self.data_columns)
-        }
+        raw_result_dict = dict(zip(self.columns, values))
+        result_dict = self.format_values(raw_result_dict)
         result_dict["line"] = i
+        print(result_dict)
+        print()
+        exit()
         return result_dict
+
+    def format_values(self, results):
+        for
+        try:
+            results[k] = locale.atof(values[v])
+        except ValueError: # check against columns_float
+            results[k] = values[v]
+
+        return
 
 
 class Poisson(Output):
