@@ -151,10 +151,10 @@ class Margins(Output):
         return result_dict
 
     def format_values(self, results):
-        for
+        # for
         try:
             results[k] = locale.atof(values[v])
-        except ValueError: # check against columns_float
+        except ValueError:  # check against columns_float
             results[k] = values[v]
 
         return
