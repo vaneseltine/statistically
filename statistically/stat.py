@@ -43,7 +43,7 @@ class Stat:
             return str(self) == str(other)
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self!s})"
+        return f"{self.__class__.__name__}({self.value!r})"
 
 
 class P(Stat):
@@ -64,9 +64,10 @@ class N(Stat):
 
     def make_validation_assertions(self):
         assert self.value > 0
+        assert isinstance(self.value, int)
 
     def __str__(self):
-        return "{:.3f}".format(self.value).lstrip("0")
+        return "{:,}".format(self.value)
 
 
 class Label(Stat):

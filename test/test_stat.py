@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from statistically.stat import Label, P
+from statistically.stat import Label, P, N, Stat
 
 
 class TestP:
@@ -45,3 +45,13 @@ class TestLabel:
         assert str(l) == "SBE"
         assert l.name == "label"
         assert repr(l) == "Label(SBE)"
+
+
+class TestN:
+    def t_core(self):
+        val = "4"
+        x = N(val)
+        assert str(x) == "4"
+        assert x.name == "n"
+        assert x.value is 4
+        assert repr(x) == "N(4)"
