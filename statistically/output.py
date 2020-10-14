@@ -20,7 +20,6 @@ class Output:
         self.logger = logger or logging.getLogger(__name__)
         self.results = dict()
         self.raw = raw + [""]
-        self.full_text = "\n".join(self.raw)
         if self.header_is_in_table:
             header -= 1
         self.start = header
@@ -40,7 +39,8 @@ class Output:
         self.parse_analysis_properties()
 
     def parse_analysis_properties(self):
-        self.results["n"] = self.parse_n(self.full_text)
+        print(self.lines)
+        self.results["n"] = self.parse_n(" ".join(self.lines))
 
     @property
     def table(self):
@@ -48,7 +48,7 @@ class Output:
 
     @staticmethod
     def parse_n(text):
-        obs_match = re.search(r"Number of obs[\s=]+([\d,]+)", text)
+        obs_match = re.search(r"Number of obs[\s]+=[\s]+([\d,]+)", text)
         if not obs_match:
             return None
         return N(obs_match.group(1))
@@ -73,7 +73,6 @@ class Output:
     def find_handler(cls, s):
         for subc in cls.__subclasses__():
             if subc.first_line.match(s):
-                # print(subc, s)
                 return subc
         return None
 

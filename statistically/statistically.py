@@ -1,5 +1,4 @@
 """An empty-featured Stata output scraper/parser."""
-import locale
 import logging
 import re
 import sys
@@ -7,21 +6,17 @@ from pathlib import Path
 
 from .output import Output
 
-locale.setlocale(locale.LC_ALL, "en_US.UTF8")
-
 __version__ = "0.0.4"
 
 UserInput = str
 
 
 class Log:
-    """A full Stata log, parsable into separate Outputs"""
-
-    table_start = re.compile(r"^\s*[ -]+$")
+    """A full Stata Log, parsable into separate Outputs"""
 
     def __init__(self, text, logger=None):
         self.text = self.import_text(text)
-        self.logger = logger
+        self.logger = logger or create_logger()
         self.outputs = []
         self.parse()
 
@@ -30,17 +25,18 @@ class Log:
         return [line.rstrip() for line in raw_text.splitlines()]
 
     @classmethod
-    def from_path(cls, path):
-        return cls(Path(path).read_text())
+    def from_path(cls, path, logger=None):
+        return cls(Path(path).read_text(), logger=logger)
 
     def parse(self):
         line = 0
         while line is not None and line < len(self.text):
-            line = self.advance_line(line)
+            line = self.continue_from(line)
 
-    def advance_line(self, line):
+    def continue_from(self, line):
         handler = Output.find_handler(self.text[line])
         if handler is None:
+            self.logger.debug(f"No handler for {self.text[line]}")
             return line + 1
         output = handler(self.text, line, logger=self.logger)
         self.outputs.append(output)
@@ -54,7 +50,7 @@ class Log:
 
 
 def main() -> int:
-    logger = get_statistically_logger()
+    logger = create_logger()
 
     if check_cli_only():
         return 0
@@ -108,7 +104,7 @@ def report_version() -> None:
     print(f"{package}\n{py_version}")
 
 
-def get_statistically_logger(log_file=None):
+def create_logger(log_file=None):
     """
 
     Another option:
