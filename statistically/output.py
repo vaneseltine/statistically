@@ -2,9 +2,9 @@ import locale
 import logging
 import re
 
-locale.setlocale(locale.LC_ALL, "en_US.UTF8")
-
 from .stat import Label, N, P, Stat
+
+locale.setlocale(locale.LC_ALL, "en_US.UTF8")
 
 
 class Output:

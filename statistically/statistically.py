@@ -1,6 +1,5 @@
 """An empty-featured Stata output scraper/parser."""
 import logging
-import re
 import sys
 from pathlib import Path
 
