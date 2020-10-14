@@ -10,10 +10,10 @@ EXAMPLE_DIR = Path(__file__).parent / "examples"
 def get_example(name):
     if name == "single":
         return list(EXAMPLE_DIR.glob("*.*"))
-    if name == "full":
-        return list((EXAMPLE_DIR / "full").glob("*.*"))
+    if name == "multiple":
+        return list((EXAMPLE_DIR / "multiple").glob("*.*"))
     if name == "all":
-        return get_example("single") + get_example("full")
+        return get_example("single") + get_example("multiple")
     return next(EXAMPLE_DIR.glob(name + "*"))
 
 

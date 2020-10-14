@@ -73,3 +73,8 @@ class N(Stat):
 class Label(Stat):
 
     core_format = str
+
+
+class Group(Stat):
+
+    core_format = str

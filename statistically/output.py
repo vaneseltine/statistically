@@ -161,6 +161,14 @@ class Poisson(Output):
     first_line = re.compile(r"^Poisson regression\s+Number of obs\s+=")
 
 
+class NBReg(Output):
+    header_length = 5  # does not include iterations
+    footer_length = 5
+    minimum_length = 4
+    first_line = re.compile(r"^Negative binomial regression\s+Number of obs\s+=")
+    end_table_pattern = re.compile(r"-+\+-+$")
+
+
 class Reg(Output):
     header_length = 7
     first_line = re.compile(r"^\s+Source \|\s+SS\s+df\s+MS\s+Number of obs\s+=")
@@ -191,6 +199,6 @@ class TEffectsEstimation(Output):
 
 
 class TTest(Output):
-    header_length = 1
+    header_length = 2
     footer_length = 5
-    first_line = re.compile(r"^Two-sample t test with equal variances$")
+    first_line = re.compile(r"^Two-sample t test with equal variances")

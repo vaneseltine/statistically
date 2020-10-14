@@ -12,7 +12,7 @@ class TestP:
         assert str(p) == ".410"
         assert float(p) == val
         assert p.name == "p"
-        assert repr(p) == "P(.410)"
+        assert repr(p) == "P(0.40952424)"
 
     @pytest.mark.parametrize(
         "raw, as_float, as_str",
@@ -44,7 +44,7 @@ class TestLabel:
         l = Label(val)
         assert str(l) == "SBE"
         assert l.name == "label"
-        assert repr(l) == "Label(SBE)"
+        assert repr(l) == "Label('SBE')"
 
 
 class TestN:
