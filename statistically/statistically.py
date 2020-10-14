@@ -5,7 +5,7 @@ from pathlib import Path
 
 from .output import Output
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 
 UserInput = str
 
