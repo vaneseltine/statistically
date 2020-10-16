@@ -8,12 +8,11 @@ EXAMPLE_DIR = Path(__file__).parent / "examples"
 
 
 class TestLineLexerBasics:
-    l = LineLexer.from_path(EXAMPLE_DIR / "multiple" / "full_log.txt")
     # l = LineLexer.from_path(EXAMPLE_DIR / "tebalance.txt")
-    # l = LineLexer.from_path(EXAMPLE_DIR / "nbreg.txt")
+    l = LineLexer.from_path(EXAMPLE_DIR / "multiple" / "full_log.txt")
 
     def t_lex(self):
-        assert self.l
+        assert len(self.l) == len(self.l.text)
 
 
 colnames = [
@@ -23,3 +22,6 @@ colnames = [
     "                  |Standardized differences          Variance ratio",
     "                  |        Raw     Matched           Raw    Matched",
 ]
+
+l = LineLexer.from_path(EXAMPLE_DIR / "nbreg.txt")
+print(*l.lines.items(), sep="\n")

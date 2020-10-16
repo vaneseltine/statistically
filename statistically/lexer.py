@@ -2,7 +2,7 @@ from pathlib import Path
 import re
 
 
-class Token:
+class LineToken:
     priority = False
     include = []
     exclude = []
@@ -51,12 +51,17 @@ class Token:
         is_match = patterns_including and not patterns_excluding
         return is_match
 
+    def __len__(self):
+        return len(self.s)
+
     def __str__(self):
         return self.__class__.__name__
 
+    def __repr__(self):
+        return f'<{self.__class__.__name__}:"{self.s}">'
 
-# todo: @register to re.compile everything together
-class Command(Token):
+
+class Command(LineToken):
     priority = True
     include = [
         r"^\. [^\s]",
@@ -66,16 +71,16 @@ class Command(Token):
     ]
 
 
-class Blank(Token):
+class Blank(LineToken):
     include = [r"^\s*$"]
 
 
-class Unknown(Token):
+class Unknown(LineToken):
     def __str__(self):
         return "?"
 
 
-class TableRow(Token):
+class TableRow(LineToken):
     include = [r"\s+\|"]
     exclude = [r"Pr\(\|[A-z]\|"]
     ignore_absolutes = re.compile(r"\|[A-z]\|")
@@ -86,11 +91,11 @@ class TableRow(Token):
         return fixed
 
 
-class TableLineDiv(Token):
+class TableLineDiv(LineToken):
     include = [r"^\s{0,3}-+\+-+$"]
 
 
-class TableLineOuter(Token):
+class TableLineOuter(LineToken):
     include = [r"^\s{0,3}-+$"]
 
 
@@ -98,7 +103,7 @@ class LineLexer:
     def __init__(self, text):  # , logger=None):
         self.text = self.import_text(text)
         self.outputs = []
-        self.lex()
+        self.lines = self.lex_lines(self.text)
 
     @staticmethod
     def import_text(raw_text):
@@ -108,22 +113,17 @@ class LineLexer:
     def from_path(cls, path):
         return cls(Path(path).read_text())
 
-    def lex(self):
-        line = 0
-        while line is not None and line < len(self.text):
-            line = self.continue_from(line)
+    def lex_lines(self, text):
+        return {i: self.lex(s) for i, s in enumerate(text)}
 
-    def continue_from(self, line):
-        s = self.text[line]
-        token_class = Token.find(s)
+    def lex(self, s):
+        token_class = LineToken.find(s)
         token = token_class(s)
-        print(f"{line:<6} {str(token):<20} {s}")
-        # if line >= 500:
-        #     return None
-        return line + 1
+        print(f"{str(token):<20} {s}")
+        return token
 
     def __len__(self):
-        return len(self.text)
+        return len(self.lines)
 
     def __str__(self):
         return f'{self.__class__.__name__}("something or other")'
