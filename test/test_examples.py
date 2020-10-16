@@ -30,7 +30,7 @@ class TestExamples:
 
 
 class TestMargins:
-    path = get_example("margins")
+    path = get_example("margins.txt")
     log = st.Log.from_path(path)
     output = log.outputs[0]
 
