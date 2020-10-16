@@ -4,11 +4,16 @@ import re
 
 class Token:
     priority = False
-    include = [re.compile(x) for x in [r"^\. [^\s]", r"^\.\s*$", r"^> ", r"^>$",]]
+    include = []
     exclude = []
 
     def __init__(self, s):
         self.s = s
+
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls.include = [re.compile(x) for x in cls.include]
+        cls.exclude = [re.compile(x) for x in cls.exclude]
 
     @classmethod
     def find(cls, s):
@@ -35,10 +40,15 @@ class Token:
         return matches.pop()
 
     @classmethod
-    def match(self, s):
-        includes = any(x.search(s) for x in self.include)
-        excludes = any(x.search(s) for x in self.exclude)
-        is_match = includes and not excludes
+    def prematch(cls, s):
+        return s
+
+    @classmethod
+    def match(cls, s):
+        s = cls.prematch(s)
+        patterns_including = any(x.search(s) for x in cls.include)
+        patterns_excluding = any(x.search(s) for x in cls.exclude)
+        is_match = patterns_including and not patterns_excluding
         return is_match
 
     def __str__(self):
@@ -48,30 +58,43 @@ class Token:
 # todo: @register to re.compile everything together
 class Command(Token):
     priority = True
-    include = [re.compile(x) for x in [r"^\. [^\s]", r"^\.\s*$", r"^> ", r"^>$",]]
+    include = [
+        r"^\. [^\s]",
+        r"^\.\s*$",
+        r"^> ",
+        r"^>$",
+    ]
 
 
 class Blank(Token):
-    include = [re.compile(x) for x in [r"^\s*$"]]
+    include = [r"^\s*$"]
 
 
 class Unknown(Token):
-    include = []
+    def __str__(self):
+        return "?"
 
 
 class TableRow(Token):
-    include = [re.compile(x) for x in [r"\s+\|"]]
+    include = [r"\s+\|"]
+    exclude = [r"Pr\(\|[A-z]\|"]
+    ignore_absolutes = re.compile(r"\|[A-z]\|")
+
+    @classmethod
+    def prematch(cls, s):
+        fixed = cls.ignore_absolutes.sub("XXX", s)
+        return fixed
 
 
 class TableLineDiv(Token):
-    include = [re.compile(x) for x in [r"^-+\+-+$"]]
+    include = [r"^\s{0,3}-+\+-+$"]
 
 
-class TableLineOut(Token):
-    include = [re.compile(x) for x in [r"^-+$"]]
+class TableLineOuter(Token):
+    include = [r"^\s{0,3}-+$"]
 
 
-class Lexer:
+class LineLexer:
     def __init__(self, text):  # , logger=None):
         self.text = self.import_text(text)
         self.outputs = []
@@ -92,16 +115,11 @@ class Lexer:
 
     def continue_from(self, line):
         s = self.text[line]
-        token = Token.find(s)
-        if token:
-            token = token(s)
-        token = token or "-"
-        # if "|" in s:
-        # print(token)
+        token_class = Token.find(s)
+        token = token_class(s)
         print(f"{line:<6} {str(token):<20} {s}")
-        # print(line, token, s)
-        if line > 100:
-            return None
+        # if line >= 500:
+        #     return None
         return line + 1
 
     def __len__(self):

@@ -2,16 +2,18 @@ from pathlib import Path
 
 import pytest
 
-from statistically.lexer import Lexer
+from statistically.lexer import LineLexer
 
 EXAMPLE_DIR = Path(__file__).parent / "examples"
 
 
-class TestLexerBasics:
-    l = Lexer.from_path(EXAMPLE_DIR / "multiple" / "full_log.txt")
+class TestLineLexerBasics:
+    l = LineLexer.from_path(EXAMPLE_DIR / "multiple" / "full_log.txt")
+    # l = LineLexer.from_path(EXAMPLE_DIR / "tebalance.txt")
+    # l = LineLexer.from_path(EXAMPLE_DIR / "nbreg.txt")
 
     def t_lex(self):
-        assert len(self.l) > 0
+        assert self.l
 
 
 colnames = [
