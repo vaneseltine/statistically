@@ -1,16 +1,22 @@
 from pathlib import Path
 import re
 
+from enum import IntEnum
+
+
+class Priority(IntEnum):
+    HIGHEST = 1  # commands
+    HIGH = 2  # analyses
+    MEDIUM = 3  # default
+    LOW = 4  # lines
+    LOWEST = 5
+
 
 class LineLexer:
     def __init__(self, text):  # , logger=None):
         self.text = self.import_text(text)
         self.outputs = []
         self.lines = self.lex_lines(self.text)
-
-    @classmethod
-    def from_path(cls, path):
-        return cls(Path(path).read_text())
 
     @staticmethod
     def import_text(raw_text):
@@ -22,8 +28,8 @@ class LineLexer:
     @staticmethod
     def lex(s):
         token_class = LineToken.find(s)
+        print(f"{str(token_class):<20} {s}")
         token = token_class(s)
-        # print(f"{str(token):<20} {s}")
         return token
 
     def __len__(self):
@@ -31,7 +37,7 @@ class LineLexer:
 
 
 class LineToken:
-    priority = False
+    priority = Priority.MEDIUM
     include = []
     exclude = []
 
@@ -50,25 +56,18 @@ class LineToken:
         try:
             return cls.ascertain_winning_match(matches)
         except ValueError:
-            print(f"More than one match for {s}", *matches, sep="\n")
+            raise ValueError(f"More than one match for {s}: {matches}")
 
     @classmethod
     def ascertain_winning_match(cls, matches):
-        if Command in matches:
-            # overrides all others
-            return Command
-        winner = cls.exactly_one(matches)
-        if winner is None:
-            return Unknown
-        return winner
-
-    @staticmethod
-    def exactly_one(matches: set):
         if not matches:
-            return None
+            return Unknown
         if len(matches) > 1:
-            raise ValueError("More than one match")
-        return matches.pop()
+            top_priority = min(m.priority for m in matches)
+            matches = [m for m in matches if m.priority == top_priority]
+        if len(matches) == 1:
+            return matches.pop()
+        raise ValueError("Too many matches.")
 
     @classmethod
     def prematch(cls, s):
@@ -93,7 +92,7 @@ class LineToken:
 
 
 class Command(LineToken):
-    priority = True
+    priority = Priority.HIGHEST
     include = [
         r"^\. [^\s]",
         r"^\.\s*$",
@@ -123,8 +122,58 @@ class TableRow(LineToken):
 
 
 class TableLineDiv(LineToken):
+    priority = Priority.LOW
     include = [r"^\s{0,3}-+\+-+$"]
 
 
 class TableLineOuter(LineToken):
+    priority = Priority.LOW
     include = [r"^\s{0,3}-+$"]
+
+
+class AnalysisToken:
+    """
+    Place this as the first subclass to inherit the high priority.
+    """
+
+    priority = Priority.HIGH
+
+
+class AnalysisLogistic(AnalysisToken, LineToken):
+    include = [r"^Logistic regression\s+Number of obs\s+="]
+
+
+class AnalysisMargins(AnalysisToken, LineToken):
+    include = [r"^Predictive margins\s+Number of obs\s+="]
+
+
+class AnalysisPoisson(AnalysisToken, LineToken):
+    include = [r"^Poisson regression\s+Number of obs\s+="]
+
+
+class AnalysisNBReg(AnalysisToken, LineToken):
+    include = [r"^Negative binomial regression\s+Number of obs\s+="]
+
+
+class AnalysisReg(AnalysisToken, LineToken):
+    include = [r"^\s+Source \|\s+SS\s+df\s+MS\s+Number of obs\s+="]
+
+
+class AnalysisSummarize(AnalysisToken, LineToken):
+    include = [r"^    Variable \|        Obs"]
+
+
+class AnalysisTabStat(AnalysisToken, LineToken):
+    include = [r"^.*variable \|\s+mean\s+sd\s+min\s+max\s+N$"]
+
+
+class AnalysisTEBalance(AnalysisToken, LineToken):
+    include = [r"^\s*Covariate balance summary\s*$"]
+
+
+class AnalysisTEffectsEstimation(AnalysisToken, LineToken):
+    include = [r"Treatment-effects estimation\s+Number of obs\s+="]
+
+
+class AnalysisTTest(AnalysisToken, LineToken):
+    include = [r"^Two-sample t test with equal variances"]

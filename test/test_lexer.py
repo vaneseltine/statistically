@@ -3,14 +3,14 @@ from pathlib import Path
 
 import pytest
 
-from statistically.lexer import LineLexer, LineToken, TableRow
+from statistically.lexer import LineLexer, LineToken, TableRow, AnalysisLogistic
 
 EXAMPLE_DIR = Path(__file__).parent / "examples"
 
 
 class TestLineLexerBasics:
     def t_lex_keeps_all_lines(self):
-        l = LineLexer.from_path(EXAMPLE_DIR / "multiple" / "full_log.txt")
+        l = LineLexer((EXAMPLE_DIR / "multiple" / "full_log.txt").read_text())
         assert len(l) == len(l.text)
 
 
@@ -19,7 +19,6 @@ class TestTableRow:
     @pytest.mark.parametrize(
         "line",
         [
-            "    Variable |        Obs        Mean    Std. Dev.       Min        Max",
             "   Group |     Obs        Mean    Std. Err.   Std. Dev.   [95% Conf. Interval]",
             "               two_n_pubs |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]",
             "                  |Standardized differences          Variance ratio",
@@ -34,6 +33,7 @@ class TestTableRow:
     @pytest.mark.parametrize(
         "line",
         [
+            "    Variable |        Obs        Mean    Std. Dev.       Min        Max",
             "                          Raw     Matched           Raw    Matched",
             " Pr(T < t) = 1.0000         Pr(|T| > |t|) = 0.0000          Pr(T > t) = 0.0000",
         ],
@@ -43,6 +43,33 @@ class TestTableRow:
         assert LineLexer.lex(line).__class__ != TableRow
 
 
+class TestAnalysisLogistic:
+    @staticmethod
+    @pytest.mark.parametrize(
+        "line",
+        [
+            "Logistic regression                             Number of obs     =     60,262",
+            "Logistic regression                             Number of obs     =         62",
+            "Logistic regression                             Number of obs     =     62",
+        ],
+    )
+    def t_good(line):
+        assert LineToken.find(line) == AnalysisLogistic
+        assert LineLexer.lex(line).__class__ == AnalysisLogistic
+
+    @staticmethod
+    @pytest.mark.parametrize(
+        "line",
+        [
+            "                          Raw     Matched           Raw    Matched",
+            " Pr(T < t) = 1.0000         Pr(|T| > |t|) = 0.0000          Pr(T > t) = 0.0000",
+        ],
+    )
+    def t_bad(line):
+        assert LineToken.find(line) != AnalysisLogistic
+        assert LineLexer.lex(line).__class__ != AnalysisLogistic
+
+
 if __name__ == "__main__" and sys.argv[1:]:
-    lexed = LineLexer.from_path(" ".join(sys.argv[1:]))
+    lexed = LineLexer(Path(" ".join(sys.argv[1:])).read_text())
     print(*lexed.lines.items(), sep="\n")

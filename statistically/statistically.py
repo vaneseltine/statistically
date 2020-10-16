@@ -4,6 +4,8 @@ import sys
 from pathlib import Path
 
 from .output import Output
+from .lexer import LineLexer
+from .parser import Parser
 
 __version__ = "0.0.5"
 
@@ -47,6 +49,7 @@ class Log:
     def __str__(self):
         return f'{self.__class__.__name__}("something or other")'
 
+
 def main() -> int:
     logger = create_logger()
 
@@ -54,20 +57,20 @@ def main() -> int:
         return 0
     raw_input = input_from_args()
     logger.debug(f"Raw input {raw_input!r}")
-    if raw_input:
-        path = Path(raw_input)
-    else:
-        path = Path(r"./test/examples/members.log")
-    assert path.exists()
-    log = Log.from_path(path)
+    text = Path(raw_input).read_text()
+    lexed_lines = LineLexer(text)
+    print(*lexed_lines.lines.items(), sep="\n")
+    tables = Parser(lexed_lines)
+    return 0
+
+
+def dump(log, logger):
     print("= Begin")
     for i, output in enumerate(log.outputs):
         print(f"== {i+1} of {len(log.outputs)}: {output}")
         output.report()
     logger.debug(f"Total table count: {len(log.outputs)}")
     print("= End")
-
-    return 0
 
 
 def check_cli_only() -> bool:
