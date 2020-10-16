@@ -39,7 +39,7 @@ class Output:
         self.parse_analysis_properties()
 
     def parse_analysis_properties(self):
-        print(self.lines)
+        # print(self.lines)
         self.results["n"] = self.parse_n(" ".join(self.lines))
 
     @property
@@ -71,22 +71,24 @@ class Output:
 
     @classmethod
     def find_handler(cls, s):
-        for subc in cls.__subclasses__():
-            if subc.first_line.match(s):
-                return subc
-        return None
+        checks = {subc: subc.is_hander_for(s) for subc in cls.__subclasses__()}
+        matches = [key for key, value in checks.items() if value]
+        if not matches:
+            return None
+        if len(matches) > 1:
+            raise ValueError(f"Found multiple handlers for {s}")
+        return matches[0]
+
+    @classmethod
+    def is_hander_for(cls, s):
+        return bool(cls.first_line.match(s))
 
     def find_table_end(self, table_start):
         i = table_start + self.minimum_length
         while i is not None and i < len(self.raw):
-            # print(i)
-            # print(len(self.raw), repr(self.raw))
-            # print("looking for end of table", i, self.raw[i])
             if self.end_table_pattern.match(self.raw[i]):
-                # print("got it")
                 return i
             i += 1
-        # raise RuntimeWarning("Could not find end of table, got to end of file")
         return len(self.raw) - 1
 
     def __len__(self):

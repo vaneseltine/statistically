@@ -35,7 +35,7 @@ class Log:
     def continue_from(self, line):
         handler = Output.find_handler(self.text[line])
         if handler is None:
-            self.logger.debug(f"No handler for {self.text[line]}")
+            # self.logger.debug(f"No handler for {self.text[line]}")
             return line + 1
         output = handler(self.text, line, logger=self.logger)
         self.outputs.append(output)
@@ -46,7 +46,6 @@ class Log:
 
     def __str__(self):
         return f'{self.__class__.__name__}("something or other")'
-
 
 def main() -> int:
     logger = create_logger()
