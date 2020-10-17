@@ -1,4 +1,3 @@
-from pathlib import Path
 import re
 
 from enum import IntEnum
@@ -28,7 +27,6 @@ class LineLexer:
     @staticmethod
     def lex(s):
         token_class = LineToken.find(s)
-        print(f"{str(token_class):<20} {s}")
         token = token_class(s)
         return token
 
