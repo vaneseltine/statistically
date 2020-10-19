@@ -1,3 +1,4 @@
+
 Negative binomial regression                    Number of obs     =      1,452
                                                 LR chi2(25)       =     200.47
 Dispersion     = mean                           Prob > chi2       =     0.0000
@@ -41,3 +42,5 @@ missing_funding_diversity |   -.041239   .1045496    -0.39   0.693    -.2461524 
                     alpha |   6.89e-24          .                             .           .
 -------------------------------------------------------------------------------------------
 LR test of alpha=0: chibar2(01) = 0.00                 Prob >= chibar2 = 1.000
+
+blah blah

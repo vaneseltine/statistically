@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from statistically.lexer import LineLexer, LineToken, TableRow, AnalysisLogistic
+from statistically.lexer import LineLexer, LineToken, TableRow, Logistic
 
 EXAMPLE_DIR = Path(__file__).parent / "examples"
 
@@ -43,7 +43,7 @@ class TestTableRow:
         assert LineLexer.lex(line).__class__ != TableRow
 
 
-class TestAnalysisLogistic:
+class TestLogistic:
     @staticmethod
     @pytest.mark.parametrize(
         "line",
@@ -54,8 +54,8 @@ class TestAnalysisLogistic:
         ],
     )
     def t_good(line):
-        assert LineToken.find(line) == AnalysisLogistic
-        assert LineLexer.lex(line).__class__ == AnalysisLogistic
+        assert LineToken.find(line) == Logistic
+        assert LineLexer.lex(line).__class__ == Logistic
 
     @staticmethod
     @pytest.mark.parametrize(
@@ -66,10 +66,10 @@ class TestAnalysisLogistic:
         ],
     )
     def t_bad(line):
-        assert LineToken.find(line) != AnalysisLogistic
-        assert LineLexer.lex(line).__class__ != AnalysisLogistic
+        assert LineToken.find(line) != Logistic
+        assert LineLexer.lex(line).__class__ != Logistic
 
 
 if __name__ == "__main__" and sys.argv[1:]:
     lexed = LineLexer(Path(" ".join(sys.argv[1:])).read_text())
-    print(*lexed.lines.items(), sep="\n")
+    print(*lexed, sep="\n")

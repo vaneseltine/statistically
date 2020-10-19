@@ -23,7 +23,7 @@ class LineLexer:
         return [line.rstrip() for line in raw_text.splitlines()]
 
     def lex_lines(self, text):
-        return {i: self.lex(s) for i, s in enumerate(text)}
+        return [self.lex(s) for i, s in enumerate(text)]
 
     @staticmethod
     def lex(s):
@@ -32,12 +32,17 @@ class LineLexer:
         token = token_class(s)
         return token
 
+    def __iter__(self):
+        return iter(self.lines)
+
     def __len__(self):
         return len(self.lines)
 
 
 class LineToken:
     priority = Priority.MEDIUM
+    is_table = False
+    level = 0
     include = []
     exclude = []
 
@@ -85,7 +90,7 @@ class LineToken:
         return len(self.s)
 
     def __str__(self):
-        return self.__class__.__name__
+        return self.s
 
     def __repr__(self):
         return f'<{self.__class__.__name__}:"{self.s}">'
@@ -111,6 +116,7 @@ class Blank(LineToken):
 
 
 class TableRow(LineToken):
+    is_table = True
     include = [r"\s+\|"]
     exclude = [r"Pr\(\|[A-z]\|"]
     ignore_absolutes = re.compile(r"\|[A-z]\|")
@@ -122,58 +128,60 @@ class TableRow(LineToken):
 
 
 class TableLineDiv(LineToken):
+    is_table = True
     priority = Priority.LOW
     include = [r"^\s{0,3}-+\+-+$"]
 
 
 class TableLineOuter(LineToken):
+    is_table = True
     priority = Priority.LOW
     include = [r"^\s{0,3}-+$"]
 
 
 class AnalysisToken:
     """
-    Place this as the first subclass to inherit the high priority.
+    Place this as the first subclass to inherit the high priority, etc.
     """
 
     priority = Priority.HIGH
 
 
-class AnalysisLogistic(AnalysisToken, LineToken):
+class Logistic(AnalysisToken, LineToken):
     include = [r"^Logistic regression\s+Number of obs\s+="]
 
 
-class AnalysisMargins(AnalysisToken, LineToken):
+class Margins(AnalysisToken, LineToken):
     include = [r"^Predictive margins\s+Number of obs\s+="]
 
 
-class AnalysisPoisson(AnalysisToken, LineToken):
+class Poisson(AnalysisToken, LineToken):
     include = [r"^Poisson regression\s+Number of obs\s+="]
 
 
-class AnalysisNBReg(AnalysisToken, LineToken):
+class NBReg(AnalysisToken, LineToken):
     include = [r"^Negative binomial regression\s+Number of obs\s+="]
 
 
-class AnalysisReg(AnalysisToken, LineToken):
+class Reg(AnalysisToken, LineToken):
     include = [r"^\s+Source \|\s+SS\s+df\s+MS\s+Number of obs\s+="]
 
 
-class AnalysisSummarize(AnalysisToken, LineToken):
+class Summarize(AnalysisToken, LineToken):
     include = [r"^    Variable \|        Obs"]
 
 
-class AnalysisTabStat(AnalysisToken, LineToken):
+class TabStat(AnalysisToken, LineToken):
     include = [r"^.*variable \|\s+mean\s+sd\s+min\s+max\s+N$"]
 
 
-class AnalysisTEBalance(AnalysisToken, LineToken):
+class TEBalance(AnalysisToken, LineToken):
     include = [r"^\s*Covariate balance summary\s*$"]
 
 
-class AnalysisTEffectsEstimation(AnalysisToken, LineToken):
+class TEffectsEstimation(AnalysisToken, LineToken):
     include = [r"Treatment-effects estimation\s+Number of obs\s+="]
 
 
-class AnalysisTTest(AnalysisToken, LineToken):
+class TTest(AnalysisToken, LineToken):
     include = [r"^Two-sample t test with equal variances"]

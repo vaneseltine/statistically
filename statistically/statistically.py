@@ -59,8 +59,9 @@ def main() -> int:
     logger.debug(f"Raw input {raw_input!r}")
     text = Path(raw_input).read_text()
     lexed_lines = LineLexer(text)
-    print(*lexed_lines.lines.items(), sep="\n")
-    tables = Parser(lexed_lines)
+    print(*lexed_lines.lines, sep="\n")
+    parser = Parser(lexed_lines)
+    parser.report()
     return 0
 
 
