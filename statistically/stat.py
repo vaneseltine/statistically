@@ -57,18 +57,6 @@ class Stat:
         return f"{self.__class__.__name__}({self.value!r})"
 
 
-class P(Stat):
-
-    core_format = float
-
-    def make_validation_assertions(self):
-        assert self.value <= 1
-        assert self.value >= 0
-
-    def __str__(self):
-        return "{:.3f}".format(self.value).lstrip("0")
-
-
 class N(Stat):
 
     core_format = int
@@ -81,17 +69,24 @@ class N(Stat):
         return "{:,}".format(self.value)
 
 
-class Variable(Stat):
+class P(Stat):
+
+    core_format = float
+
+    def make_validation_assertions(self):
+        assert self.value <= 1
+        assert self.value >= 0
+
+    def __str__(self):
+        return "{:.3f}".format(self.value).lstrip("0")
+
+
+class Group(Stat):
 
     core_format = str
 
 
 class Label(Stat):
-
-    core_format = str
-
-
-class Group(Stat):
 
     core_format = str
 
@@ -102,5 +97,10 @@ class Parameter(Stat):
 
 
 class Text(Stat):
+
+    core_format = str
+
+
+class Variable(Stat):
 
     core_format = str

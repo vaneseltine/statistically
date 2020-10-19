@@ -5,12 +5,12 @@ import pytest
 
 from statistically.lexer import LineLexer, LineToken, TableRow, Logistic
 
-EXAMPLE_DIR = Path(__file__).parent / "examples"
+EXAMPLE_LOGS = Path(__file__).parent / "example_logs"
 
 
 class TestLineLexerBasics:
     def t_lex_keeps_all_lines(self):
-        l = LineLexer((EXAMPLE_DIR / "multiple" / "full_log.txt").read_text())
+        l = LineLexer((EXAMPLE_LOGS / "full_log.txt").read_text())
         assert len(l) == len(l.text)
 
 
