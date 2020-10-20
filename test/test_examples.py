@@ -4,17 +4,18 @@ import pytest
 
 from statistically import statistically as st
 
-EXAMPLE_DIR = Path(__file__).parent / "examples"
+EXAMPLE_ANALYSES = Path(__file__).parent / "example_analyses"
+EXAMPLE_LOGS = Path(__file__).parent / "example_logs"
 
 
 def get_example(name):
     if name == "single":
-        return list(EXAMPLE_DIR.glob("*.*"))
+        return list(EXAMPLE_ANALYSES.glob("*.*"))
     if name == "multiple":
-        return list((EXAMPLE_DIR / "multiple").glob("*.*"))
+        return list(EXAMPLE_LOGS.glob("*.*"))
     if name == "all":
         return get_example("single") + get_example("multiple")
-    return next(EXAMPLE_DIR.glob(name + "*"))
+    return next(EXAMPLE_ANALYSES.glob(name + "*"))
 
 
 class TestExamples:
@@ -30,7 +31,7 @@ class TestExamples:
 
 
 class TestMargins:
-    path = get_example("margins.txt")
+    path = get_example("margins/margins.txt")
     log = st.Log.from_path(path)
     output = log.outputs[0]
 

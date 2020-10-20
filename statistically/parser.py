@@ -1,78 +1,204 @@
 import locale
 import logging
 import re
+from enum import IntEnum
 
-from .stat import Label, N, P, Stat
+from . import lexer
+from . import stat
 
 locale.setlocale(locale.LC_ALL, "en_US.UTF8")
 
 
-class Parser:
-    def __init__(self, lexed):
-        print(lexed)
-        exit()
+class Collecting(IntEnum):
+    HEADER = 1
+    TABLE = 2
+    FOOTER = 3
 
 
-class Analysis:
+class Section:
 
-    header_length = None
-    footer_length = 0
+    handlers = {}
 
-    minimum_length = 1
-    end_table_pattern = re.compile(r"^\s{0,3}-+$")
-    header_is_in_table = False
+    def __init__(self):
+        self.properties = []
 
-    def __init__(self, raw, header, logger=None):
-        self.logger = logger or logging.getLogger(__name__)
-        self.results = dict()
-        self.raw = raw + [""]
-        if self.header_is_in_table:
-            header -= 1
-        self.start = header
-        self.table_start = self.start + self.header_length
-        self.table_end = self.find_table_end(self.table_start)
-        self.end = self.table_end + 1 + self.footer_length
-        self.lines = self.raw[self.start : self.end]
-        print(
-            f"head {self.start},",
-            f"table, {self.table_start},",
-            f"footer, {self.table_end + 1},",
-            f"end, {self.end}",
-        )
-        self.raw_header = self.raw[self.start : self.table_start]
-        self.raw_table = self.raw[self.table_start : self.table_end + 1]
-        self.raw_footer = self.raw[self.table_end + 1 : self.end]
-        self.parse_analysis_properties()
+    def __init_subclass__(cls, **kwargs):
+        cls.handlers.update({k: cls for k in cls.handlees})
+        super().__init_subclass__(**kwargs)
 
-    def parse_analysis_properties(self):
-        # print(self.lines)
-        self.results["n"] = self.parse_n(" ".join(self.lines))
+    @classmethod
+    def find(cls, line):
+        return cls.handlers.get(line.__class__, SectionNull)
 
     def report(self):
-        INDENT = "   "
-        HEADER = "==="
-        for attr in ("raw_header", "raw_table", "raw_footer"):
-            print(HEADER, attr)
-            print(*(INDENT + " " + x for x in getattr(self, attr)), sep="\n")
-        print(HEADER, "analysis properties")
-        print(INDENT, self.results)
-        print(HEADER, "tables rows")
-        for row in self.table:
-            print(INDENT, row)
+        raise NotImplementedError
 
-    def find_table_end(self, table_start):
-        i = table_start + self.minimum_length
-        while i is not None and i < len(self.raw):
-            if self.end_table_pattern.match(self.raw[i]):
-                return i
-            i += 1
-        return len(self.raw) - 1
+    def __call__(self, line):
+        raise NotImplementedError
 
-    def __len__(self):
-        return len(self.lines)
+    def __str__(self):
+        return str(self.__class__)
 
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.start}-{self.end})"
+
+class SectionNull(Section):
+    handlees = []
+
+    def report(self):
+        pass
+
+    def __call__(self, line):
+        # print(f"{self} for {line!r}")
+        return False
+
+
+class SectionNBReg(Section):
+    handlees = [lexer.NBReg]
+
+    row_divider_pattern = re.compile(r"^[-+ ]+$")
+    row_data_pattern = re.compile(r"[^-\w#,+.]+")
+    row_variable_pattern = re.compile(r"([/\w#]+)\s+\|$")
+    row_not_estimable = re.compile(r"not estimable")
+    skippable = re.compile(r"(\-\-\-)|Delta-method|(95% Conf. Interval)|(^[ \|]+$)")
+    columns = {
+        "iv": stat.Label,
+        "coef": stat.Stat,
+        "std_err": stat.Stat,
+        "z": stat.Stat,
+        "p_z": stat.P,
+        "ci_lo": stat.Stat,
+        "ci_hi": stat.Stat,
+    }
+
+    def __init__(self):
+        super().__init__()
+        self.header = []
+        self.raw_table = []
+        self.footer = []
+        self.raw_table_line_counter = 0
+        self.funnel = self.header
+        self.table = []
+        self.properties = dict()
+        self._tracking_variable = None
+
+    def __call__(self, line):
+        if line.is_table:
+            self.funnel = self.raw_table
+        if isinstance(line, lexer.TableLineOuter):
+            self.raw_table_line_counter += 1
+        self.funnel.append(line)
+        if self.raw_table_line_counter == 2:
+            self.funnel = self.footer
+        if len(self.footer) >= 1:
+            self.complete()
+            return False
+        return True
+
+    def complete(self):
+        self.properties = self.assemble_properties()
+        self.table = self.construct_table()
+
+    def assemble_properties(self):
+        auto_stats = dict(self.auto_parse_stats())
+        stats = {
+            "analysis": "nbreg",
+            "dv": self.get_dv(),
+            "alpha": self.extract_from_raw("  alpha |"),
+            "/lnalpha": self.extract_from_raw("/lnalpha |"),
+        }
+        stats.update(auto_stats)
+        return stats
+
+    def extract_from_raw(self, s, stat_type=stat.Stat):
+        matches = [l for l in self.raw_table if s in str(l)]
+        assert len(matches) == 1
+        line = matches[0]
+        self.raw_table.remove(line)
+        value = stat.FLOAT_PATTERN.search(str(line)).group(0)
+
+        return stat_type(value)
+
+    def auto_parse_stats(self):
+        for h in self.header:
+            for s in h.s.split("            "):
+                raw_eq = s.split("=")
+                if len(raw_eq) != 2:
+                    continue
+                label, raw_value = (x.strip() for x in raw_eq)
+                formatted = stat.Stat.auto(label, raw_value)
+                yield (label, formatted)
+
+    def get_dv(self):
+        raw_dv, *_ = str(self.raw_table[1]).split("|")
+        return raw_dv.strip()
+
+    def report(self):
+        # print(self)
+        # print(self.header)
+        print(self.properties)
+        print(*self.table, sep="\n")
+        # print(self.footer)
+
+    def construct_table(self):
+        pre_table = [self.add_row(i, row) for i, row in enumerate(self.raw_table)]
+        return [row for row in pre_table if row]
+
+    def add_row(self, i, row):
+        row = str(row).strip()
+        if self.no_useful_values(row):
+            self._tracking_variable = None
+            return None
+        if self.row_variable_pattern.match(row):
+            self._tracking_variable = self.row_variable_pattern.match(row).group(1)
+            return None
+        stats = self.create_stats(row)
+        stats["variable"] = self._tracking_variable
+        stats["line"] = i
+        return stats
+
+    def no_useful_values(self, row):
+        if self.row_divider_pattern.match(row):
+            return True
+        if self.skippable.search(row):
+            return True
+        if self.row_not_estimable.search(row):
+            return True
+        return False
+
+    def create_stats(self, row):
+        values = self.values_from_row(row)
+        stat_classes = (v for v in self.columns.values())
+        stat_labels = (k for k in self.columns)
+        staticized = [c(v) for c, v in zip(stat_classes, values)]
+        dictionized = {l: s for l, s in zip(stat_labels, staticized)}
+        return dictionized
+
+    def values_from_row(self, row):
+        return self.row_data_pattern.split(row)
+
+
+class Parser:
+
+    section_handlers = {lexer.NBReg: SectionNBReg}
+
+    def __init__(self, lexed):
+        self.active_handler = None
+        self.groups = []
+        self.group(lexed)
+
+    def report(self):
+        print(self.groups)
+        for g in self.groups:
+            if g:
+                g.report()
+
+    def group(self, lexed):
+        keep_handler = False
+        # Could enumerate the following to keep line numbers
+        for line in lexed:
+            if not keep_handler:
+                self.groups.append(self.active_handler)
+                self.active_handler = Section.find(line)()
+            keep_handler = self.active_handler(line)
 
 
 class Equation:
