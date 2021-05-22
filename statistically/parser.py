@@ -1,5 +1,4 @@
 import locale
-import logging
 import re
 from enum import IntEnum
 
@@ -199,16 +198,3 @@ class Parser:
                 self.groups.append(self.active_handler)
                 self.active_handler = Section.find(line)()
             keep_handler = self.active_handler(line)
-
-
-class Equation:
-    @staticmethod
-    def parse_n(text):
-        obs_match = re.search(r"Number of obs[\s]+=[\s]+([\d,]+)", text)
-        if not obs_match:
-            return None
-        return N(obs_match.group(1))
-
-    @property
-    def n(self):
-        return self.results["n"]
