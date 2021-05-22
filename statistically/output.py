@@ -58,16 +58,16 @@ class Output:
         return self.results["n"]
 
     def report(self):
-        INDENT = "   "
-        HEADER = "==="
+        indent = "   "
+        header_line = "==="
         for attr in ("raw_header", "raw_table", "raw_footer"):
-            print(HEADER, attr)
-            print(*(INDENT + " " + x for x in getattr(self, attr)), sep="\n")
-        print(HEADER, "analysis properties")
-        print(INDENT, self.results)
-        print(HEADER, "tables rows")
+            print(header_line, attr)
+            print(*(indent + " " + x for x in getattr(self, attr)), sep="\n")
+        print(header_line, "analysis properties")
+        print(indent, self.results)
+        print(header_line, "tables rows")
         for row in self.table:
-            print(INDENT, row)
+            print(indent, row)
 
     @classmethod
     def find_handler(cls, s):
