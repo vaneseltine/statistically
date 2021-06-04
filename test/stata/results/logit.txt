@@ -1,41 +1,28 @@
-{smcl}
-{txt}{sf}{ul off}{.-}
-      name:  {res}<unnamed>
-       {txt}log:  {res}N:\INK\matvan\stata\statistically\results/logit.txt
-  {txt}log type:  {res}smcl
- {txt}opened on:  {res} 3 Jun 2021, 21:35:21
-{txt}
-{com}. /*
+
+. /*
 >     logit
 >     Example 1
 > */
 . logit foreign weight mpg
 
-{res}{txt}Iteration 0:{space 3}log likelihood = {res: -45.03321}  
-Iteration 1:{space 3}log likelihood = {res:-29.238536}  
-Iteration 2:{space 3}log likelihood = {res:-27.244139}  
-Iteration 3:{space 3}log likelihood = {res:-27.175277}  
-Iteration 4:{space 3}log likelihood = {res:-27.175156}  
-Iteration 5:{space 3}log likelihood = {res:-27.175156}  
-{res}
-{txt}Logistic regression{col 49}Number of obs{col 67}= {res}        74
-{txt}{col 49}LR chi2({res}2{txt}){col 67}= {res}     35.72
-{txt}{col 49}Prob > chi2{col 67}= {res}    0.0000
-{txt}Log likelihood = {res}-27.175156{txt}{col 49}Pseudo R2{col 67}= {res}    0.3966
+Iteration 0:   log likelihood =  -45.03321  
+Iteration 1:   log likelihood = -29.238536  
+Iteration 2:   log likelihood = -27.244139  
+Iteration 3:   log likelihood = -27.175277  
+Iteration 4:   log likelihood = -27.175156  
+Iteration 5:   log likelihood = -27.175156  
 
-{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
-{col 1}     foreign{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      z{col 46}   P>|z|{col 54}     [95% Con{col 67}f. Interval]
-{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
-{space 6}weight {c |}{col 14}{res}{space 2}-.0039067{col 26}{space 2} .0010116{col 37}{space 1}   -3.86{col 46}{space 3}0.000{col 54}{space 4}-.0058894{col 67}{space 3} -.001924
-{txt}{space 9}mpg {c |}{col 14}{res}{space 2}-.1685869{col 26}{space 2} .0919175{col 37}{space 1}   -1.83{col 46}{space 3}0.067{col 54}{space 4}-.3487418{col 67}{space 3}  .011568
-{txt}{space 7}_cons {c |}{col 14}{res}{space 2} 13.70837{col 26}{space 2} 4.518709{col 37}{space 1}    3.03{col 46}{space 3}0.002{col 54}{space 4} 4.851859{col 67}{space 3} 22.56487
-{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+Logistic regression                             Number of obs     =         74
+                                                LR chi2(2)        =      35.72
+                                                Prob > chi2       =     0.0000
+Log likelihood = -27.175156                     Pseudo R2         =     0.3966
 
-{com}. log close
-      {txt}name:  {res}<unnamed>
-       {txt}log:  {res}N:\INK\matvan\stata\statistically\results/logit.txt
-  {txt}log type:  {res}smcl
- {txt}closed on:  {res} 3 Jun 2021, 21:35:21
-{txt}{.-}
-{smcl}
-{txt}{sf}{ul off}
+------------------------------------------------------------------------------
+     foreign |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+      weight |  -.0039067   .0010116    -3.86   0.000    -.0058894    -.001924
+         mpg |  -.1685869   .0919175    -1.83   0.067    -.3487418     .011568
+       _cons |   13.70837   4.518709     3.03   0.002     4.851859    22.56487
+------------------------------------------------------------------------------
+
+. capture log close

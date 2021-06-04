@@ -1,0 +1,20 @@
+
+. /*
+>     table
+>     Example 1
+> */
+. table rep78
+
+----------------------
+Repair    |
+Record    |
+1978      |      Freq.
+----------+-----------
+     Poor |          2
+     Fair |          8
+  Average |         30
+     Good |         18
+Excellent |         11
+----------------------
+
+. capture log close

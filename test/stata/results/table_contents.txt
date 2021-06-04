@@ -1,0 +1,20 @@
+
+. /*
+>     table with contents
+>     Example 1 with multiple statistics
+> */
+. table rep78, contents(n mpg mean mpg sd mpg median mpg)
+
+----------------------------------------------------------
+Repair    |
+Record    |
+1978      |     N(mpg)   mean(mpg)     sd(mpg)    med(mpg)
+----------+-----------------------------------------------
+     Poor |          2          21     4.24264          21
+     Fair |          8      19.125    3.758324          18
+  Average |         30     19.4333    4.141325          19
+     Good |         18     21.6667     4.93487        22.5
+Excellent |         11     27.3636    8.732385          30
+----------------------------------------------------------
+
+. capture log close
