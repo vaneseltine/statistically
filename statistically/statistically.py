@@ -21,6 +21,7 @@ def main() -> int:
     logger.debug(f"Raw input {raw_input!r}")
     for filename in glob(raw_input):
         print("\n", filename, "\n")
+        print(Path(filename).read_text())
         TextLog(filename)
     return 0
 

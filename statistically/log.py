@@ -15,12 +15,16 @@ class TextLog:
 
     column_finder = re.compile(r" [|+]+(\s|$)")
     horizontal_line = re.compile(r"(?<=)[-+]+(?=\W)")
+    only_a_line = re.compile(r"^[-+]+$")
 
     def __init__(self, path: Union[Path, str]) -> None:
         self.lines = self.make_lines(path)
-        # print(self.raw)
         self.table_boundaries = self.find_tables(self.lines)
-        print(f'("{Path(path).name}", {self.table_boundaries}),')
+        # print(self.table_boundaries)
+        self.tables = [
+            self.build_table(self.lines[start:end])
+            for start, end in self.table_boundaries
+        ]
         # parameters = self.find_parameters()
 
     @staticmethod
@@ -29,12 +33,8 @@ class TextLog:
 
     @classmethod
     def find_tables(cls, lines: Lines) -> List[Tuple[int, int]]:
-        # debug
-        # for i, line in enumerate(lines):
-        #     print(f"{i:>3} {line}")
-
         tables_string = "".join(cls.find_line(l) for l in lines)
-        print(tables_string)
+        # print(tables_string)
         table_quantifier = re.compile(
             r"""(?x)  # allow these comments
             (?<=\b)   # boundary, including start of line
@@ -53,8 +53,60 @@ class TextLog:
             return LINE_HAS_COLUMN
         return LINE_UNUSED
 
+    @classmethod
+    def build_table(cls, lines):
+        print("START OF BUILD TABLE")
+        # print(*lines, sep="\n")
+        cleaned = cls.clean_table_lines(lines)
+        for i, line in enumerate(cleaned):
+            print(f"  {i:>2} {line}")
+        columns = cls.make_columns(cleaned)
+        print("END OF BUILD TABLE")
+
+    @classmethod
+    def clean_table_lines(cls, lines):
+        start, end = cls.determine_horizontal_range(lines)
+        cut_lines = [l[start : end + 1] for l in lines]
+
+        for row in (0, -1):
+            if cls.only_a_line.match(cut_lines[row]):
+                cut_lines.pop(row)
+
+        return cut_lines
+
+    @classmethod
+    def determine_horizontal_range(cls, lines):
+        line_matches = [
+            cls.horizontal_line.search(l)
+            for l in lines
+            if cls.horizontal_line.search(l)
+        ]
+        table_min = min(l.span()[0] for l in line_matches)
+        table_max = max(l.span()[-1] for l in line_matches)
+        return (table_min, table_max)
+
+    @classmethod
+    def make_columns(cls, lines):
+        any_content = re.compile(r"\w")
+        lines_with_content = [l for l in lines if any_content.search(l)]
+        print(*(f"{x}        " for x in range(9)))
+        print("0123456789" * 9)
+        print(*lines_with_content, sep="\n")
+        blank_cols = cls.find_blank_columns(lines_with_content)
+        columns_groupings = cls.group_columns(blank_cols)
+
+    @classmethod
+    def find_blank_columns(cls, lines):
+        rotated_lines = enumerate(zip(*lines))
+        return [i for i, col in rotated_lines if all(x == " " for x in col)]
+
+    @classmethod
+    def group_columns(cls, blanks):
+        print(blanks)
+        pass
+
     def find_parameters(self) -> None:
-        """
+        r"""
         Pick up additional parameters grouped by equals such as output:
 
             ```
@@ -73,6 +125,11 @@ class TextLog:
             Expression   : Linear prediction, predict()
             ```
 
-        equals_finder = re.compile(r"  =  ")
+        Hmm something like...?
+
+            equals_finder = re.compile(r"  +(\w +)  +=  +[-+.0-9]")
+
+        no... probably divide up with simple " = "
+        then capture nearest total boundaries of `\s\s\w` and `\w\b`
         """
         pass  # pylint: disable=unnecessary-pass
