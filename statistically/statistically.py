@@ -3,8 +3,8 @@ import logging
 import sys
 from pathlib import Path
 
-from .output import Output
 from .lexer import LineLexer
+from .output import Output
 from .parser import Parser
 
 __version__ = "0.0.5"

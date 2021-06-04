@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from statistically.stat import Label, P, N, Stat
+from statistically.stat import Label, N, P, Stat
 
 
 class TestP:
@@ -16,7 +16,11 @@ class TestP:
 
     @pytest.mark.parametrize(
         "raw, as_float, as_str",
-        [(0, 0, ".000"), (0.5, 0.5, ".500"), ("0.5", 0.5, ".500"),],
+        [
+            (0, 0, ".000"),
+            (0.5, 0.5, ".500"),
+            ("0.5", 0.5, ".500"),
+        ],
     )
     def t_basics(self, raw, as_float, as_str):
         p = P(raw)
@@ -24,7 +28,8 @@ class TestP:
         assert float(p) == as_float
 
     @pytest.mark.parametrize(
-        "raw", [-1, 1.1, "bob"],
+        "raw",
+        [-1, 1.1, "bob"],
     )
     def t_baddies(self, raw):
         with pytest.raises(ValueError):
@@ -32,7 +37,13 @@ class TestP:
 
     @pytest.mark.parametrize(
         "one, two",
-        [(0.1, ".10"), (".10", ".100"), (".2", ".20"), (".3", ".300"), (0.9, ".9"),],
+        [
+            (0.1, ".10"),
+            (".10", ".100"),
+            (".2", ".20"),
+            (".3", ".300"),
+            (0.9, ".9"),
+        ],
     )
     def t_equals(self, one, two):
         assert P(one) == P(two)

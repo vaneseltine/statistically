@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from statistically.lexer import LineLexer, LineToken, TableRow, Logistic
+from statistically.lexer import LineLexer, LineToken, Logistic, TableRow
 
 EXAMPLE_LOGS = Path(__file__).parent / "example_logs"
 

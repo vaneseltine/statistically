@@ -2,8 +2,7 @@ import locale
 import re
 from enum import IntEnum
 
-from . import lexer
-from . import stat
+from . import lexer, stat
 
 locale.setlocale(locale.LC_ALL, "en_US.UTF8")
 

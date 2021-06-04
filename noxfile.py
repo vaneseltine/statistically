@@ -119,6 +119,7 @@ def lint_typing(session, subfolder=PACKAGE_NAME):
 
 @nox.session(python=False)
 def lint_black(session):
+    session.run("python", "-m", "isort", ".")
     session.run("python", "-m", "black", "-t", "py36", ".")
 
 
