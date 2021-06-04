@@ -1,6 +1,7 @@
 """An empty-featured Stata output scraper/parser."""
 import logging
 import sys
+from glob import glob
 from pathlib import Path
 from typing import Optional
 
@@ -18,7 +19,9 @@ def main() -> int:
         return 0
     raw_input = input_from_args()
     logger.debug(f"Raw input {raw_input!r}")
-    t = TextLog(raw_input)
+    for filename in glob(raw_input):
+        print("\n", filename, "\n")
+        TextLog(filename)
     return 0
 
 

@@ -1,9 +1,9 @@
+from typing import Any
+
 import pytest
 
 from statistically.stat import AmbiguousValue as AmbV
 from statistically.stat import Label, N, P
-
-from typing import Any
 
 
 class TestLabel:
