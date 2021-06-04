@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+# type: ignore
 """Invoke via `nox` or `python -m nox`"""
 
 import re
@@ -101,6 +102,12 @@ def get_pypi_version(encoding="utf-8"):
 
 
 @nox.session(python=False)
+def lint_black(session):
+    session.run("python", "-m", "isort", ".")
+    session.run("python", "-m", "black", "-t", "py36", ".")
+
+
+@nox.session(python=False)
 def lint_flake8(session):
     session.run("flake8", PACKAGE_NAME)
 
@@ -115,12 +122,6 @@ def lint_pylint(session):
 @nox.session(python=False)
 def lint_typing(session, subfolder=PACKAGE_NAME):
     session.run("python", "-m", "mypy", "--strict", subfolder)
-
-
-@nox.session(python=False)
-def lint_black(session):
-    session.run("python", "-m", "isort", ".")
-    session.run("python", "-m", "black", "-t", "py36", ".")
 
 
 @nox.session(python=supported_pythons(), reuse_venv=False)

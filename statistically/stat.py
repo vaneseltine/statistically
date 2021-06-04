@@ -1,59 +1,58 @@
 import locale
 import re
+from typing import Any, Callable, Dict, Optional, Type, Union
 
 locale.setlocale(locale.LC_ALL, "en_US.UTF8")
 
 FLOAT_PATTERN = re.compile(r"([-\de.]+)")
 
+AmbiguousValue = Union[str, float, int]
+
 
 class Stat:
 
-    converters = {float: locale.atof, int: locale.atoi, str: str}
-    core_format = float
+    converters: Dict[Type[Any], Callable[[str], AmbiguousValue]] = {
+        float: locale.atof,
+        int: locale.atoi,
+        str: str,
+    }
+    core_format: Type[Any] = float
     str_format = "{}"
 
-    def __init__(self, raw_value, *, name=None, final_value=None):
+    def __init__(
+        self, raw_value: AmbiguousValue, *, name: Optional[str] = None
+    ) -> None:
         self.raw = raw_value
-        self.value = final_value or self.convert(raw_value)
+        self.value: AmbiguousValue = self.convert(raw_value)
         self.name = name or self.__class__.__name__.lower()
         self.validate()
 
-    @classmethod
-    def auto(cls, label, value):
-        UNAMBIGUOUS_FORMATS = {
-            "Number of obs": N,
-        }
-        auto_class = UNAMBIGUOUS_FORMATS.get(label, cls)
-        try:
-            return auto_class(value)
-        except ValueError:
-            return Text(value)
-
-    def convert(self, raw):
+    def convert(self, raw: AmbiguousValue) -> AmbiguousValue:
         return self.converters[self.core_format](str(raw))
 
-    def validate(self):
+    def validate(self) -> None:
         try:
             self.make_validation_assertions()
-        except AssertionError:
-            raise ValueError(f"Input {self.raw!r} failed validation as {self!r}")
+        except AssertionError as err:
+            invalid_msg = f"Input {self.raw!r} failed validation as {self!r}"
+            raise ValueError(invalid_msg) from err
 
-    def make_validation_assertions(self):
+    def make_validation_assertions(self) -> None:
         pass
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.str_format.format(self.value)
 
-    def __float__(self):
+    def __float__(self) -> float:
         return float(self.value)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         try:
-            return float(self) == float(other)
+            return float(self) == float(other)  # type: ignore
         except ValueError:
             return str(self) == str(other)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"{self.__class__.__name__}({self.value!r})"
 
 
@@ -61,11 +60,11 @@ class N(Stat):
 
     core_format = int
 
-    def make_validation_assertions(self):
-        assert self.value > 0
+    def make_validation_assertions(self) -> None:
         assert isinstance(self.value, int)
+        assert self.value > 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "{:,}".format(self.value)
 
 
@@ -73,12 +72,12 @@ class P(Stat):
 
     core_format = float
 
-    def make_validation_assertions(self):
-        assert self.value <= 1
-        assert self.value >= 0
+    def make_validation_assertions(self) -> None:
+        assert isinstance(self.value, float)
+        assert 0 <= self.value <= 1
 
-    def __str__(self):
-        return "{:.3f}".format(self.value).lstrip("0")
+    def __str__(self) -> str:
+        return "{:.3f}".format(self.value).lstrip("0")  # type: ignore
 
 
 class Group(Stat):

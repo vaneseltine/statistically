@@ -2,79 +2,26 @@
 import logging
 import sys
 from pathlib import Path
+from typing import Optional
 
-from .lexer import LineLexer
-from .output import Output
-from .parser import Parser
-
-__version__ = "0.0.5"
+__version__ = "0.1.0dev0"
 
 UserInput = str
-
-
-class Log:
-    """A full Stata Log, parsable into separate Outputs"""
-
-    def __init__(self, text, logger=None):
-        self.text = self.import_text(text)
-        self.logger = logger or create_logger()
-        self.outputs = []
-        self.parse()
-
-    @staticmethod
-    def import_text(raw_text):
-        return [line.rstrip() for line in raw_text.splitlines()]
-
-    @classmethod
-    def from_path(cls, path, logger=None):
-        return cls(Path(path).read_text(), logger=logger)
-
-    def parse(self):
-        line = 0
-        while line is not None and line < len(self.text):
-            line = self.continue_from(line)
-
-    def continue_from(self, line):
-        handler = Output.find_handler(self.text[line])
-        if handler is None:
-            # self.logger.debug(f"No handler for {self.text[line]}")
-            return line + 1
-        output = handler(self.text, line, logger=self.logger)
-        self.outputs.append(output)
-        return output.end
-
-    def __len__(self):
-        return len(self.text)
-
-    def __str__(self):
-        return f'{self.__class__.__name__}("something or other")'
 
 
 def main() -> int:
     logger = create_logger()
 
-    if check_cli_only():
+    if handle_cli_only():
         return 0
     raw_input = input_from_args()
     logger.debug(f"Raw input {raw_input!r}")
     text = Path(raw_input).read_text()
-    lexed_lines = LineLexer(text)
-    print(*lexed_lines.lines, sep="\n")
-    parser = Parser(lexed_lines)
-    parser.report()
+    logger.debug(text)
     return 0
 
 
-def dump(log, logger):
-    print("= Begin")
-    for i, output in enumerate(log.outputs):
-        print(f"== {i+1} of {len(log.outputs)}: {output}")
-        output.report()
-    logger.debug(f"Total table count: {len(log.outputs)}")
-    print("= End")
-
-
-def check_cli_only() -> bool:
+def handle_cli_only() -> bool:
     args = sys.argv[1:]
     if not args or "-h" in args or "--help" in args:
         report_help()
@@ -106,7 +53,7 @@ def report_version() -> None:
     print(f"{package}\n{py_version}")
 
 
-def create_logger(log_file=None):
+def create_logger(log_file: Optional[str] = None) -> logging.Logger:
     """
 
     Another option:
@@ -131,7 +78,3 @@ def create_logger(log_file=None):
     if log_file:
         new_logger.debug(f"Logging to {log_file}")
     return new_logger
-
-
-if __name__ == "__main__":
-    sys.exit(main())

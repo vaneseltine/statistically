@@ -15,7 +15,10 @@ disable=bad-continuation,               # handled by black
         empty-docstring,                 # yes yes yes
         protected-access,
         no-self-use,
-        duplicate-code
+        duplicate-code,
+        literal-comparison,
+        too-few-public-methods,
+        invalid-name
 
 # Display a full report or only the messages.
 reports=no
