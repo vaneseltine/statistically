@@ -1,0 +1,41 @@
+{smcl}
+{txt}{sf}{ul off}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}N:\INK\matvan\stata\statistically\results/margins8.txt
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res} 3 Jun 2021, 21:35:22
+{txt}
+{com}. /*
+>     margins
+>     Example 8: Margins of interactions
+> */
+. margins sex#group
+{res}
+{txt}Predictive margins{col 49}Number of obs{col 67}= {res}     3,000
+{txt}{col 1}Model VCE{col 14}: {res}OIM
+
+{txt}{p2colset 1 14 16 2}{...}
+{p2col:Expression}:{space 1}{res:Pr(outcome), predict()}{p_end}
+{p2colreset}{...}
+
+{res}{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26} Delta-method
+{col 14}{c |}     Margin{col 26}   Std. Err.{col 38}      z{col 46}   P>|z|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 3}sex#group {c |}
+{space 5}male#1  {c |}{col 14}{res}{space 2} .2379605{col 26}{space 2} .0237178{col 37}{space 1}   10.03{col 46}{space 3}0.000{col 54}{space 4} .1914745{col 67}{space 3} .2844465
+{txt}{space 5}male#2  {c |}{col 14}{res}{space 2} .0658294{col 26}{space 2} .0105278{col 37}{space 1}    6.25{col 46}{space 3}0.000{col 54}{space 4} .0451953{col 67}{space 3} .0864636
+{txt}{space 5}male#3  {c |}{col 14}{res}{space 2} .0538001{col 26}{space 2} .0136561{col 37}{space 1}    3.94{col 46}{space 3}0.000{col 54}{space 4} .0270347{col 67}{space 3} .0805656
+{txt}{space 3}female#1  {c |}{col 14}{res}{space 2} .2158632{col 26}{space 2} .0112968{col 37}{space 1}   19.11{col 46}{space 3}0.000{col 54}{space 4} .1937218{col 67}{space 3} .2380045
+{txt}{space 3}female#2  {c |}{col 14}{res}{space 2} .2054406{col 26}{space 2} .0183486{col 37}{space 1}   11.20{col 46}{space 3}0.000{col 54}{space 4} .1694781{col 67}{space 3} .2414032
+{txt}{space 3}female#3  {c |}{col 14}{res}{space 2}  .085448{col 26}{space 2} .0533914{col 37}{space 1}    1.60{col 46}{space 3}0.110{col 54}{space 4}-.0191973{col 67}{space 3} .1900932
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}N:\INK\matvan\stata\statistically\results/margins8.txt
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res} 3 Jun 2021, 21:35:22
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

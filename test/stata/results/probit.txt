@@ -1,0 +1,41 @@
+{smcl}
+{txt}{sf}{ul off}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}N:\INK\matvan\stata\statistically\results/probit.txt
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res} 3 Jun 2021, 21:35:20
+{txt}
+{com}. /*
+>     probit
+>     Example 1
+> */
+. probit foreign weight mpg
+
+{res}{txt}Iteration 0:{space 3}log likelihood = {res: -45.03321}  
+Iteration 1:{space 3}log likelihood = {res:-27.914626}  
+Iteration 2:{space 3}log likelihood = {res:-26.858074}  
+Iteration 3:{space 3}log likelihood = {res:-26.844197}  
+Iteration 4:{space 3}log likelihood = {res:-26.844189}  
+Iteration 5:{space 3}log likelihood = {res:-26.844189}  
+{res}
+{txt}Probit regression{col 49}Number of obs{col 67}= {res}        74
+{txt}{col 49}LR chi2({res}2{txt}){col 67}= {res}     36.38
+{txt}{col 49}Prob > chi2{col 67}= {res}    0.0000
+{txt}Log likelihood = {res}-26.844189{txt}{col 49}Pseudo R2{col 67}= {res}    0.4039
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}     foreign{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      z{col 46}   P>|z|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}weight {c |}{col 14}{res}{space 2}-.0023355{col 26}{space 2} .0005661{col 37}{space 1}   -4.13{col 46}{space 3}0.000{col 54}{space 4} -.003445{col 67}{space 3}-.0012261
+{txt}{space 9}mpg {c |}{col 14}{res}{space 2}-.1039503{col 26}{space 2} .0515689{col 37}{space 1}   -2.02{col 46}{space 3}0.044{col 54}{space 4}-.2050235{col 67}{space 3}-.0028772
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2} 8.275464{col 26}{space 2} 2.554142{col 37}{space 1}    3.24{col 46}{space 3}0.001{col 54}{space 4} 3.269437{col 67}{space 3} 13.28149
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}N:\INK\matvan\stata\statistically\results/probit.txt
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res} 3 Jun 2021, 21:35:21
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

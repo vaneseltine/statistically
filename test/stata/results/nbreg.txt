@@ -1,0 +1,60 @@
+{smcl}
+{txt}{sf}{ul off}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}N:\INK\matvan\stata\statistically\results/nbreg.txt
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res} 3 Jun 2021, 21:35:21
+{txt}
+{com}. /*
+>     nbreg
+>     Remarks and examples
+> */
+. nbreg deaths i.cohort
+
+{txt}Fitting Poisson model:
+{res}
+{txt}Iteration 0:{space 3}log likelihood = {res: -325.7993}  
+Iteration 1:{space 3}log likelihood = {res: -325.7993}  
+{res}
+{txt}Fitting constant-only model:
+{res}
+{txt}Iteration 0:{space 3}log likelihood = {res:-114.33669}  
+Iteration 1:{space 3}log likelihood = {res:-110.33038}  
+Iteration 2:{space 3}log likelihood = {res:-108.56521}  
+Iteration 3:{space 3}log likelihood = {res:-108.56018}  
+Iteration 4:{space 3}log likelihood = {res:-108.56018}  
+{res}
+{txt}Fitting full model:
+{res}
+{txt}Iteration 0:{space 3}log likelihood = {res:-108.48867}  
+Iteration 1:{space 3}log likelihood = {res:-108.48841}  
+Iteration 2:{space 3}log likelihood = {res:-108.48841}  
+{res}
+{txt}Negative binomial regression{col 49}Number of obs{col 67}= {res}        21
+{txt}{col 49}LR chi2({res}2{txt}){col 67}= {res}      0.14
+{txt}{col 1}Dispersion{col 16}= {res}mean{txt}{col 49}Prob > chi2{col 67}= {res}    0.9307
+{txt}Log likelihood = {res}-108.48841{txt}{col 49}Pseudo R2{col 67}= {res}    0.0007
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}      deaths{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      z{col 46}   P>|z|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}cohort {c |}
+{space 2}1960-1967  {c |}{col 14}{res}{space 2} .0591305{col 26}{space 2} .2978419{col 37}{space 1}    0.20{col 46}{space 3}0.843{col 54}{space 4}-.5246289{col 67}{space 3}   .64289
+{txt}{space 2}1968-1976  {c |}{col 14}{res}{space 2}-.0538792{col 26}{space 2} .2981621{col 37}{space 1}   -0.18{col 46}{space 3}0.857{col 54}{space 4}-.6382662{col 67}{space 3} .5305077
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2} 4.435906{col 26}{space 2} .2107213{col 37}{space 1}   21.05{col 46}{space 3}0.000{col 54}{space 4}   4.0229{col 67}{space 3} 4.848912
+{txt}{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 4}/lnalpha {c |}{col 14}{res}{space 2}-1.207379{col 26}{space 2} .3108622{col 54}{space 4}-1.816657{col 67}{space 3}-.5980999
+{txt}{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+       alpha {c |}{col 14}{res}{space 2}   .29898{col 26}{space 2} .0929416{col 54}{space 4} .1625683{col 67}{space 3} .5498555
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+LR test of alpha=0: {help j_chibar##|_new:chibar2(01) = }{res}434.62{col 56}{txt}Prob >= chibar2 = {res}0.000
+{txt}
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}N:\INK\matvan\stata\statistically\results/nbreg.txt
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res} 3 Jun 2021, 21:35:21
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

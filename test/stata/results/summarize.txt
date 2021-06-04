@@ -1,0 +1,38 @@
+{smcl}
+{txt}{sf}{ul off}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}N:\INK\matvan\stata\statistically\results/summarize.txt
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res} 3 Jun 2021, 21:35:20
+{txt}
+{com}. /*
+>     summarize
+>     Example 1: summarize with the separator() option
+> */
+. summarize, separator(4)
+
+{txt}    Variable {c |}        Obs        Mean    Std. Dev.       Min        Max
+{hline 13}{c +}{hline 57}
+{space 8}make {c |}{res}          0
+{txt}{space 7}price {c |}{res}         74    6165.257    2949.496       3291      15906
+{txt}{space 9}mpg {c |}{res}         74     21.2973    5.785503         12         41
+{txt}{space 7}rep78 {c |}{res}         69    3.405797    .9899323          1          5
+{txt}{hline 13}{c +}{hline 57}
+{space 4}headroom {c |}{res}         74    2.993243    .8459948        1.5          5
+{txt}{space 7}trunk {c |}{res}         74    13.75676    4.277404          5         23
+{txt}{space 6}weight {c |}{res}         74    3019.459    777.1936       1760       4840
+{txt}{space 6}length {c |}{res}         74    187.9324    22.26634        142        233
+{txt}{hline 13}{c +}{hline 57}
+{space 8}turn {c |}{res}         74    39.64865    4.399354         31         51
+{txt}displacement {c |}{res}         74    197.2973    91.83722         79        425
+{txt}{space 2}gear_ratio {c |}{res}         74    3.014865    .4562871       2.19       3.89
+{txt}{space 5}foreign {c |}{res}         74    .2972973    .4601885          0          1
+{txt}
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}N:\INK\matvan\stata\statistically\results/summarize.txt
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res} 3 Jun 2021, 21:35:20
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

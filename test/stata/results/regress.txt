@@ -1,0 +1,36 @@
+{smcl}
+{txt}{sf}{ul off}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}N:\INK\matvan\stata\statistically\results/regress.txt
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res} 3 Jun 2021, 21:35:20
+{txt}
+{com}. /*
+>     regress
+>     Example 1: Basic linear regression
+> */
+. regress mpg weight foreign
+
+{txt}      Source {c |}       SS           df       MS      Number of obs   ={res}        74
+{txt}{hline 13}{c +}{hline 34}   F(2, 71)        = {res}    69.75
+{txt}       Model {c |} {res}  1619.2877         2  809.643849   {txt}Prob > F        ={res}    0.0000
+{txt}    Residual {c |} {res} 824.171761        71   11.608053   {txt}R-squared       ={res}    0.6627
+{txt}{hline 13}{c +}{hline 34}   Adj R-squared   ={res}    0.6532
+{txt}       Total {c |} {res} 2443.45946        73  33.4720474   {txt}Root MSE        =   {res} 3.4071
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}         mpg{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}weight {c |}{col 14}{res}{space 2}-.0065879{col 26}{space 2} .0006371{col 37}{space 1}  -10.34{col 46}{space 3}0.000{col 54}{space 4}-.0078583{col 67}{space 3}-.0053175
+{txt}{space 5}foreign {c |}{col 14}{res}{space 2}-1.650029{col 26}{space 2} 1.075994{col 37}{space 1}   -1.53{col 46}{space 3}0.130{col 54}{space 4}  -3.7955{col 67}{space 3} .4954422
+{txt}{space 7}_cons {c |}{col 14}{res}{space 2}  41.6797{col 26}{space 2} 2.165547{col 37}{space 1}   19.25{col 46}{space 3}0.000{col 54}{space 4} 37.36172{col 67}{space 3} 45.99768
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{res}{txt}
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}N:\INK\matvan\stata\statistically\results/regress.txt
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res} 3 Jun 2021, 21:35:20
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

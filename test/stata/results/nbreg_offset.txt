@@ -1,0 +1,42 @@
+{smcl}
+{txt}{sf}{ul off}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}N:\INK\matvan\stata\statistically\results/nbreg_offset.txt
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res} 3 Jun 2021, 21:35:21
+{txt}
+{com}. /*
+>     nbreg with offset
+>     Remarks and examples
+> */
+. nbreg deaths i.cohort, offset(logexp) nolog
+{res}
+{txt}Negative binomial regression{col 49}Number of obs{col 67}= {res}        21
+{txt}{col 49}LR chi2({res}2{txt}){col 67}= {res}      0.40
+{txt}{col 1}Dispersion{col 16}= {res}mean{txt}{col 49}Prob > chi2{col 67}= {res}    0.8171
+{txt}Log likelihood = {res} -131.3799{txt}{col 49}Pseudo R2{col 67}= {res}    0.0015
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 1}      deaths{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      z{col 46}   P>|z|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 6}cohort {c |}
+{space 2}1960-1967  {c |}{col 14}{res}{space 2}-.2676187{col 26}{space 2} .7237203{col 37}{space 1}   -0.37{col 46}{space 3}0.712{col 54}{space 4}-1.686084{col 67}{space 3} 1.150847
+{txt}{space 2}1968-1976  {c |}{col 14}{res}{space 2}-.4573957{col 26}{space 2} .7236651{col 37}{space 1}   -0.63{col 46}{space 3}0.527{col 54}{space 4}-1.875753{col 67}{space 3} .9609618
+{txt}{space 12} {c |}
+{space 7}_cons {c |}{col 14}{res}{space 2}-2.086731{col 26}{space 2}  .511856{col 37}{space 1}   -4.08{col 46}{space 3}0.000{col 54}{space 4} -3.08995{col 67}{space 3}-1.083511
+{col 1}{txt}      logexp{col 14}{c |}{res}{space 2}        1{col 26}{txt}  (offset)
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{space 4}/lnalpha {c |}{col 14}{res}{space 2} .5939963{col 26}{space 2} .2583615{col 54}{space 4} .0876171{col 67}{space 3} 1.100376
+{txt}{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+       alpha {c |}{col 14}{res}{space 2} 1.811212{col 26}{space 2} .4679475{col 54}{space 4}  1.09157{col 67}{space 3} 3.005295
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+LR test of alpha=0: {help j_chibar##|_new:chibar2(01) = }{res}4056.27{col 56}{txt}Prob >= chibar2 = {res}0.000
+{txt}
+{com}. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}N:\INK\matvan\stata\statistically\results/nbreg_offset.txt
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res} 3 Jun 2021, 21:35:21
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}
