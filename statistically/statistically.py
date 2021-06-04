@@ -4,6 +4,8 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from .log import TextLog
+
 __version__ = "0.1.0dev0"
 
 UserInput = str
@@ -16,8 +18,7 @@ def main() -> int:
         return 0
     raw_input = input_from_args()
     logger.debug(f"Raw input {raw_input!r}")
-    text = Path(raw_input).read_text()
-    logger.debug(text)
+    t = TextLog(raw_input)
     return 0
 
 

@@ -16,8 +16,8 @@ class TestLabel:
 
 class TestN:
     def t_core(self):
-        val = "4"
-        x = N(val)
+        raw = "4"
+        x = N(raw)
         assert str(x) == "4"
         assert x.name == "n"
         assert x.value is 4
