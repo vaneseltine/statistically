@@ -4,6 +4,9 @@ __*/
 __test*
 .*#
 
+# Stata files
+data/
+
 # But keep various CI-related items
 !.circleci/
 !.builds/
