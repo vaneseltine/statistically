@@ -4,6 +4,8 @@ from operator import itemgetter
 from pathlib import Path
 from typing import List, Sequence, Union
 
+import pandas as pd
+
 from .stat import N, P, Stat
 
 Lines = List[str]
@@ -111,14 +113,21 @@ class Table:
         self.cleaned = self.clean_table_lines(lines)
         for i, line in enumerate(self.cleaned):
             print(f"  {i:>2} {line}")
-        self.header_num = self.find_header(self.cleaned)
         self.text_columns = self.parse_columns(self.cleaned)
-        self.columns = [Column(c, self.header_num) for c in self.text_columns]
-        key_rows = [*zip(*self.text_columns)][self.header_num :]
-        self.rows = [Row(r, self.columns) for r in key_rows]
-        for i, row in enumerate(self.rows):
-            print(i, row)
+        header_count = self.find_header(self.cleaned)
+        column_names = self.create_column_names(self.text_columns, header_count)
+        # self.columns = [Column(c, self.header_num) for c in self.text_columns]
+        # print(self.columns)
+        key_rows = [*zip(*self.text_columns)][header_count:]
+        # print(key_rows)
+        print(pd.DataFrame(key_rows, columns=column_names))
         print("END OF BUILD TABLE")
+
+    @staticmethod
+    def create_column_names(text_columns: List[List[str]], header_count: int):
+        header_cols = [c[:header_count] for c in text_columns]
+        column_names = [" ".join(c).strip() for c in header_cols]
+        return column_names
 
     @classmethod
     def clean_table_lines(cls, lines: Lines) -> Lines:
