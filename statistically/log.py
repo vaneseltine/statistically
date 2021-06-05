@@ -1,6 +1,8 @@
+import collections
+from os import stat
 import re
 from pathlib import Path
-from typing import List, Tuple, Union
+from typing import List, Sequence, Tuple, Union
 
 Lines = List[str]
 
@@ -54,7 +56,7 @@ class TextLog:
         return LINE_UNUSED
 
     @classmethod
-    def build_table(cls, lines):
+    def build_table(cls, lines: Lines):
         print("START OF BUILD TABLE")
         # print(*lines, sep="\n")
         cleaned = cls.clean_table_lines(lines)
@@ -64,7 +66,7 @@ class TextLog:
         print("END OF BUILD TABLE")
 
     @classmethod
-    def clean_table_lines(cls, lines):
+    def clean_table_lines(cls, lines: Lines) -> Lines:
         start, end = cls.determine_horizontal_range(lines)
         cut_lines = [l[start : end + 1] for l in lines]
 
@@ -75,7 +77,7 @@ class TextLog:
         return cut_lines
 
     @classmethod
-    def determine_horizontal_range(cls, lines):
+    def determine_horizontal_range(cls, lines: Lines) -> Tuple[int, int]:
         line_matches = [
             cls.horizontal_line.search(l)
             for l in lines
@@ -86,24 +88,41 @@ class TextLog:
         return (table_min, table_max)
 
     @classmethod
-    def make_columns(cls, lines):
+    def make_columns(cls, lines: Lines):
         any_content = re.compile(r"\w")
         lines_with_content = [l for l in lines if any_content.search(l)]
         print(*(f"{x}        " for x in range(9)))
         print("0123456789" * 9)
         print(*lines_with_content, sep="\n")
         blank_cols = cls.find_blank_columns(lines_with_content)
-        columns_groupings = cls.group_columns(blank_cols)
+        column_groups = cls.group_columns(blank_cols)
+        print("groups")
+        print(column_groups)
+        for cg in column_groups:
+            for l in lines_with_content:
+                print(l[cg[0] : cg[1]])
 
     @classmethod
-    def find_blank_columns(cls, lines):
+    def find_blank_columns(cls, lines: Lines):
+
+        full_length = max(len(l) for l in lines)
+
+        lines = [f"{l:<{full_length}}" for l in lines]
         rotated_lines = enumerate(zip(*lines))
-        return [i for i, col in rotated_lines if all(x == " " for x in col)]
+        return [i for i, col in rotated_lines if cls.is_column_sep(col)]
+
+    @staticmethod
+    def is_column_sep(seq: Sequence[str]):
+        return all(x in (" |+") for x in seq)
 
     @classmethod
-    def group_columns(cls, blanks):
+    def group_columns(cls, blanks: Sequence[int]):
+        print("blank")
         print(blanks)
-        pass
+        column_groups: List[Tuple[int, int]] = []
+        if blanks[0] != 0:
+            column_groups.append((0, blanks.pop(0)))
+        return column_groups
 
     def find_parameters(self) -> None:
         r"""
