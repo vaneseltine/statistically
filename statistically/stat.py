@@ -17,14 +17,20 @@ class Stat:
         str: str,
     }
     core_format: Type[Any] = float
+    default_name = None
     str_format = "{}"
 
     def __init__(
-        self, raw_value: AmbiguousValue, *, name: Optional[str] = None
+        self,
+        raw_value: AmbiguousValue,
+        *,
+        name: Optional[str] = None,
+        core_format: Optional[Type[Any]] = None,
     ) -> None:
         self.raw = raw_value
+        self.core_format = core_format or self.core_format
         self.value: AmbiguousValue = self.convert(raw_value)
-        self.name = name or self.__class__.__name__.lower()
+        self.name = name or self.default_name or self.__class__.__name__
         self.validate()
 
     def convert(self, raw: AmbiguousValue) -> AmbiguousValue:
@@ -53,12 +59,14 @@ class Stat:
             return str(self) == str(other)
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}({self.value!r})"
+        print(self.name)
+        return f"{str(self.name)}({self.value!r})"
 
 
 class N(Stat):
 
     core_format = int
+    default_name = "n"
 
     def make_validation_assertions(self) -> None:
         assert isinstance(self.value, int)
@@ -71,6 +79,7 @@ class N(Stat):
 class P(Stat):
 
     core_format = float
+    default_name = "P"
 
     def make_validation_assertions(self) -> None:
         assert isinstance(self.value, float)

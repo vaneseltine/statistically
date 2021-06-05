@@ -24,23 +24,23 @@ def test_find_line(line, code):
 @pytest.mark.parametrize(
     "logfile, boundaries",
     [
-        ("logit.txt", [(19, 26)]),
-        ("margins1.txt", [(12, 20)]),
-        ("margins4.txt", [(12, 25)]),
-        ("margins8.txt", [(12, 24)]),
-        ("nbreg_offset.txt", [(12, 26)]),
-        ("nbreg.txt", [(31, 44)]),
-        ("probit.txt", [(19, 26)]),
-        ("regress.txt", [(7, 13), (14, 21)]),
-        ("summarize.txt", [(7, 23)]),
-        ("table_contents.txt", [(7, 18)]),
-        ("table.txt", [(7, 18)]),
+        ("logit.txt", [slice(19, 26)]),
+        ("margins1.txt", [slice(12, 20)]),
+        ("margins4.txt", [slice(12, 25)]),
+        ("margins8.txt", [slice(12, 24)]),
+        ("nbreg_offset.txt", [slice(12, 26)]),
+        ("nbreg.txt", [slice(31, 44)]),
+        ("probit.txt", [slice(19, 26)]),
+        ("regress.txt", [slice(7, 13), slice(14, 21)]),
+        ("summarize.txt", [slice(7, 23)]),
+        ("table_contents.txt", [slice(7, 18)]),
+        ("table.txt", [slice(7, 18)]),
     ],
 )
 def test_log_boundaries(logfile, boundaries):
     path = TEST_RESULTS_DIRECTORY / logfile
     log = TextLog(path)
-    assert log.table_boundaries == boundaries
+    assert log.table_slices == boundaries
 
 
 @pytest.mark.parametrize(
@@ -57,7 +57,7 @@ def test_log_boundaries(logfile, boundaries):
                 "   |  ",
                 "-----",
             ],
-            [(2, 8)],
+            [slice(2, 8)],
         ),
         (
             [
@@ -70,7 +70,7 @@ def test_log_boundaries(logfile, boundaries):
                 "3",
                 "a",
             ],
-            [(0, 6)],
+            [slice(0, 6)],
         ),
         (
             [
@@ -81,7 +81,7 @@ def test_log_boundaries(logfile, boundaries):
                 "   |  ",
                 "-----",
             ],
-            [(0, 6)],
+            [slice(0, 6)],
         ),
     ],
 )

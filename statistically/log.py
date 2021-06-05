@@ -1,12 +1,15 @@
 import re
-from pathlib import Path
-from typing import List, Sequence, Tuple, Union
 from itertools import groupby
 from operator import itemgetter
+from pathlib import Path
+from typing import List, Sequence, Union
+
+from .stat import N, P, Stat
 
 Lines = List[str]
 
-blank_line = re.compile(r"^$")
+line_horiz = re.compile(r"(?<=)[-+]+(?=\W)")
+line_only = re.compile(r"^[-+]+$")
 
 LINE_HORIZONTAL = "h"
 LINE_HAS_COLUMN = "c"
@@ -16,17 +19,12 @@ LINE_UNUSED = " "
 class TextLog:
 
     column_finder = re.compile(r" [|+]+(\s|$)")
-    horizontal_line = re.compile(r"(?<=)[-+]+(?=\W)")
-    only_a_line = re.compile(r"^[-+]+$")
 
     def __init__(self, path: Union[Path, str]) -> None:
         self.lines = self.make_lines(path)
-        self.table_boundaries = self.find_tables(self.lines)
+        self.table_slices = self.find_tables(self.lines)
         # print(self.table_boundaries)
-        self.tables = [
-            self.build_table(self.lines[start:end])
-            for start, end in self.table_boundaries
-        ]
+        self.tables = [Table(self.lines[ts]) for ts in self.table_slices]
         # parameters = self.find_parameters()
 
     @staticmethod
@@ -34,7 +32,7 @@ class TextLog:
         return Path(path).read_text().splitlines()
 
     @classmethod
-    def find_tables(cls, lines: Lines) -> List[Tuple[int, int]]:
+    def find_tables(cls, lines: Lines) -> List[slice]:
         tables_string = "".join(cls.find_line(l) for l in lines)
         # print(tables_string)
         table_quantifier = re.compile(
@@ -45,24 +43,81 @@ class TextLog:
             """
         )
         table_groups = table_quantifier.finditer(tables_string)
-        return [x.span() for x in table_groups]
+        return [slice(*x.span()) for x in table_groups]
 
     @classmethod
     def find_line(cls, line: str) -> str:
-        if cls.horizontal_line.search(line):
+        if line_horiz.search(line):
             return LINE_HORIZONTAL
         if cls.column_finder.search(line):
             return LINE_HAS_COLUMN
         return LINE_UNUSED
 
-    @classmethod
-    def build_table(cls, lines: Lines):
+
+class Column:
+
+    known_types = {
+        "obs": N,
+        "p": P,
+        "P>|t|": P,
+        "P>|z|": P,
+    }
+    common_names = {
+        "[95% Conf.": "min95",
+        "Coef.": "coef",
+        "Delta-method Std. Err.": "se",
+        "freq.": "freq",
+        "Interval]": "max95",
+        "std. dev.": "sd",
+        "Std. Err.": "se",
+    }
+
+    def __init__(self, lines: Lines, header_num: int) -> None:
+        self.header = " ".join(lines[:header_num])
+        # print("header =", self.header)
+        known_type = self.known_types.get(self.header)
+        if known_type:
+            self.type = known_type  # TODO: really need a factory method here
+            self.type_name = known_type.default_name
+        else:
+            self.type = Stat
+            self.type_name = self.common_names.get(self.header, self.header)
+        # print("type     =", self.type)
+        # print("type_name=", self.type_name)
+        self.data = lines[header_num:]
+        # print("rest")
+        # print(self.data)
+
+    def __str__(self) -> str:
+        return self.type_name
+
+    def __repr__(self) -> str:
+        return self.type_name
+
+
+class Row:
+    def __init__(self, values: Sequence[str], columns: Sequence[Column]) -> None:
+        self.dict = dict(zip(columns, values))
+
+    def __str__(self) -> str:
+        return str(self.dict)
+
+
+class Table:
+    def __init__(self, lines: Lines) -> None:
         print("START OF BUILD TABLE")
         # print(*lines, sep="\n")
-        cleaned = cls.clean_table_lines(lines)
-        for i, line in enumerate(cleaned):
+        self.raw = lines
+        self.cleaned = self.clean_table_lines(lines)
+        for i, line in enumerate(self.cleaned):
             print(f"  {i:>2} {line}")
-        columns = cls.make_columns(cleaned)
+        self.header_num = self.find_header(self.cleaned)
+        self.text_columns = self.parse_columns(self.cleaned)
+        self.columns = [Column(c, self.header_num) for c in self.text_columns]
+        key_rows = [*zip(*self.text_columns)][self.header_num :]
+        self.rows = [Row(r, self.columns) for r in key_rows]
+        for i, row in enumerate(self.rows):
+            print(i, row)
         print("END OF BUILD TABLE")
 
     @classmethod
@@ -71,45 +126,38 @@ class TextLog:
         cut_lines = [l[range_slice] for l in lines]
 
         for row in (0, -1):
-            if cls.only_a_line.match(cut_lines[row]):
+            if line_only.match(cut_lines[row]):
                 cut_lines.pop(row)
 
         return cut_lines
 
     @classmethod
     def determine_horizontal_range(cls, lines: Lines) -> slice:
-        line_matches = [
-            cls.horizontal_line.search(l)
-            for l in lines
-            if cls.horizontal_line.search(l)
-        ]
+        line_matches = [line_horiz.search(l) for l in lines if line_horiz.search(l)]
         table_min = min(l.span()[0] for l in line_matches)
         table_max = max(l.span()[-1] for l in line_matches) + 1
         return slice(table_min, table_max)
 
     @classmethod
-    def make_columns(cls, lines: Lines):
-        any_content = re.compile(r"\w")
-        lines_with_content = [l for l in lines if any_content.search(l)]
-        print(*(f"{x}        " for x in range(9)))
-        print("0123456789" * 9)
-        print(*lines_with_content, sep="\n")
-        good_cols = cls.find_useful_columns(lines_with_content)
-        print("goods")
-        print(good_cols)
-        column_groups = [*make_slices(good_cols)]
-        print("groups")
-        print(column_groups)
-        for cg in column_groups:
-            print(".......................")
-            for l in lines_with_content:
-                print(l[cg])
+    def find_header(cls, lines: Lines) -> int:
+        for i, line in enumerate(lines):
+            if line_horiz.match(line):
+                return i
+        return 1
+
+    @classmethod
+    def parse_columns(cls, lines: Lines) -> List[List[str]]:
+        content_lines = [l for l in lines if re.search(r"\w", l)]
+        good_cols = cls.find_useful_columns(content_lines)
+        col_slices = [*make_slices(good_cols)]
+        groups_of_columns = [
+            [l[cs].strip() for l in content_lines] for cs in col_slices
+        ]
+        return groups_of_columns
 
     @classmethod
     def find_useful_columns(cls, lines: Lines):
-
         full_length = max(len(l) for l in lines)
-
         lines = [f"{l:<{full_length}}" for l in lines]
         rotated_lines = enumerate(zip(*lines))
         return [i for i, col in rotated_lines if not cls.is_column_sep(col)]
@@ -156,7 +204,7 @@ def make_slices(ids: List[int]) -> List[slice]:
         [slice(1, 4), slice(8, 10)]
     """
 
-    for _, g in groupby(enumerate(ids), key=lambda x: x[0] - x[1]):
-        consecutives = [*map(itemgetter(1), g)]
+    for _, grp in groupby(enumerate(ids), key=lambda x: x[0] - x[1]):
+        consecutives = [*map(itemgetter(1), grp)]
         yield slice(consecutives[0], consecutives[-1] + 1)
     # return column_groups

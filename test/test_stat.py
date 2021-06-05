@@ -3,14 +3,20 @@ from typing import Any
 import pytest
 
 from statistically.stat import AmbiguousValue as AmbV
-from statistically.stat import Label, N, P
+from statistically.stat import Label, N, P, Stat
+
+
+class TestGeneric:
+    def t_name(self):
+        t = Stat(2, name="Coef", core_format=int)
+        assert repr(t) == "Coef(2)"
 
 
 class TestLabel:
     def t_core(self):
         l = Label("SBE")
         assert str(l) == "SBE"
-        assert l.name == "label"
+        assert l.name == "Label"
         assert repr(l) == "Label('SBE')"
 
 
@@ -22,7 +28,7 @@ class TestN:
         assert x.name == "n"
         assert x.value is 4
         assert x is not 4
-        assert repr(x) == "N(4)"
+        assert repr(x) == "n(4)"
 
 
 class TestP:
@@ -31,7 +37,7 @@ class TestP:
         p = P(val)
         assert str(p) == ".410"
         assert float(p) == val
-        assert p.name == "p"
+        assert p.name == "P"
         assert repr(p) == "P(0.40952424)"
 
     @pytest.mark.parametrize(
