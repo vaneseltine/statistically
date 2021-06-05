@@ -24,10 +24,18 @@ class TextLog:
 
     def __init__(self, path: Union[Path, str]) -> None:
         self.lines = self.make_lines(path)
-        self.table_slices = self.find_tables(self.lines)
+        self.main_tables = self.get_tables(self.lines)
+        self.stats = self.get_more_stats(self.lines)
+        self.tables = self.main_tables + self.stats
+
+    def get_tables(self, lines: Lines):
+        table_slices = self.find_tables(lines)
         # print(self.table_boundaries)
-        self.tables = [Table(self.lines[ts]) for ts in self.table_slices]
-        # parameters = self.find_parameters()
+        return [Table(lines[ts]) for ts in table_slices]
+
+    def get_more_stats(self, lines: Lines):
+        return []
+        pass
 
     def report(self):
         for i, line in enumerate(self.lines):
@@ -75,6 +83,7 @@ class Table:
         key_rows = [*zip(*self.text_columns)][header_count:]
         # print(key_rows)
         self.df = pd.DataFrame(key_rows, columns=column_names)
+        # set_index("colname", verify_integrity=True)
 
     def to_df(self) -> pd.DataFrame:
         return self.df
