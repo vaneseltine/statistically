@@ -20,8 +20,11 @@ def main() -> int:
     logger.debug(f"Raw input {raw_input!r}")
     for filename in glob(raw_input):
         print("\n", filename, "\n")
-        print(Path(filename).read_text())
-        TextLog(filename)
+        # print(Path(filename).read_text())
+        log = TextLog(filename)
+        log.report()
+        for tab in log.tables:
+            print(tab.to_df())
     return 0
 
 

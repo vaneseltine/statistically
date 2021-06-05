@@ -29,6 +29,10 @@ class TextLog:
         self.tables = [Table(self.lines[ts]) for ts in self.table_slices]
         # parameters = self.find_parameters()
 
+    def report(self):
+        for i, line in enumerate(self.lines):
+            print(f"{i:>4} {line}")
+
     @staticmethod
     def make_lines(path: Union[Path, str]) -> Lines:
         return Path(path).read_text().splitlines()
@@ -56,63 +60,13 @@ class TextLog:
         return LINE_UNUSED
 
 
-class Column:
-
-    known_types = {
-        "obs": N,
-        "p": P,
-        "P>|t|": P,
-        "P>|z|": P,
-    }
-    common_names = {
-        "[95% Conf.": "min95",
-        "Coef.": "coef",
-        "Delta-method Std. Err.": "se",
-        "freq.": "freq",
-        "Interval]": "max95",
-        "std. dev.": "sd",
-        "Std. Err.": "se",
-    }
-
-    def __init__(self, lines: Lines, header_num: int) -> None:
-        self.header = " ".join(lines[:header_num])
-        # print("header =", self.header)
-        known_type = self.known_types.get(self.header)
-        if known_type:
-            self.type = known_type  # TODO: really need a factory method here
-            self.type_name = known_type.default_name
-        else:
-            self.type = Stat
-            self.type_name = self.common_names.get(self.header, self.header)
-        # print("type     =", self.type)
-        # print("type_name=", self.type_name)
-        self.data = lines[header_num:]
-        # print("rest")
-        # print(self.data)
-
-    def __str__(self) -> str:
-        return self.type_name
-
-    def __repr__(self) -> str:
-        return self.type_name
-
-
-class Row:
-    def __init__(self, values: Sequence[str], columns: Sequence[Column]) -> None:
-        self.dict = dict(zip(columns, values))
-
-    def __str__(self) -> str:
-        return str(self.dict)
-
-
 class Table:
     def __init__(self, lines: Lines) -> None:
-        print("START OF BUILD TABLE")
         # print(*lines, sep="\n")
         self.raw = lines
         self.cleaned = self.clean_table_lines(lines)
-        for i, line in enumerate(self.cleaned):
-            print(f"  {i:>2} {line}")
+        # for i, line in enumerate(self.cleaned):
+        #     print(f"  {i:>2} {line}")
         self.text_columns = self.parse_columns(self.cleaned)
         header_count = self.find_header(self.cleaned)
         column_names = self.create_column_names(self.text_columns, header_count)
@@ -120,8 +74,10 @@ class Table:
         # print(self.columns)
         key_rows = [*zip(*self.text_columns)][header_count:]
         # print(key_rows)
-        print(pd.DataFrame(key_rows, columns=column_names))
-        print("END OF BUILD TABLE")
+        self.df = pd.DataFrame(key_rows, columns=column_names)
+
+    def to_df(self) -> pd.DataFrame:
+        return self.df
 
     @staticmethod
     def create_column_names(text_columns: List[List[str]], header_count: int):
