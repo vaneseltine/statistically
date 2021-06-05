@@ -34,8 +34,18 @@ class TextLog:
         return [Table(lines[ts]) for ts in table_slices]
 
     def get_more_stats(self, lines: Lines):
-        return []
-        pass
+        lines_with_equals = [l for l in lines if re.search(r"=", l)]
+        for line in lines_with_equals:
+            param = self.get_param(line)
+        exit()
+
+    @classmethod
+    def get_param(cls, line) -> List[str]:
+        print(line)
+        squasher = re.compile(r"\s+=\s+")
+        squashed = squasher.sub("=", line)
+        final = squashed
+        return [l.strip() for l in final.split("=")]
 
     def report(self):
         for i, line in enumerate(self.lines):
