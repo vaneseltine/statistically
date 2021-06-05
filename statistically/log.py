@@ -1,8 +1,8 @@
-import collections
-from os import stat
 import re
 from pathlib import Path
 from typing import List, Sequence, Tuple, Union
+from itertools import groupby
+from operator import itemgetter
 
 Lines = List[str]
 
@@ -67,8 +67,8 @@ class TextLog:
 
     @classmethod
     def clean_table_lines(cls, lines: Lines) -> Lines:
-        start, end = cls.determine_horizontal_range(lines)
-        cut_lines = [l[start : end + 1] for l in lines]
+        range_slice = cls.determine_horizontal_range(lines)
+        cut_lines = [l[range_slice] for l in lines]
 
         for row in (0, -1):
             if cls.only_a_line.match(cut_lines[row]):
@@ -77,15 +77,15 @@ class TextLog:
         return cut_lines
 
     @classmethod
-    def determine_horizontal_range(cls, lines: Lines) -> Tuple[int, int]:
+    def determine_horizontal_range(cls, lines: Lines) -> slice:
         line_matches = [
             cls.horizontal_line.search(l)
             for l in lines
             if cls.horizontal_line.search(l)
         ]
         table_min = min(l.span()[0] for l in line_matches)
-        table_max = max(l.span()[-1] for l in line_matches)
-        return (table_min, table_max)
+        table_max = max(l.span()[-1] for l in line_matches) + 1
+        return slice(table_min, table_max)
 
     @classmethod
     def make_columns(cls, lines: Lines):
@@ -94,35 +94,29 @@ class TextLog:
         print(*(f"{x}        " for x in range(9)))
         print("0123456789" * 9)
         print(*lines_with_content, sep="\n")
-        blank_cols = cls.find_blank_columns(lines_with_content)
-        column_groups = cls.group_columns(blank_cols)
+        good_cols = cls.find_useful_columns(lines_with_content)
+        print("goods")
+        print(good_cols)
+        column_groups = [*make_slices(good_cols)]
         print("groups")
         print(column_groups)
         for cg in column_groups:
+            print(".......................")
             for l in lines_with_content:
-                print(l[cg[0] : cg[1]])
+                print(l[cg])
 
     @classmethod
-    def find_blank_columns(cls, lines: Lines):
+    def find_useful_columns(cls, lines: Lines):
 
         full_length = max(len(l) for l in lines)
 
         lines = [f"{l:<{full_length}}" for l in lines]
         rotated_lines = enumerate(zip(*lines))
-        return [i for i, col in rotated_lines if cls.is_column_sep(col)]
+        return [i for i, col in rotated_lines if not cls.is_column_sep(col)]
 
     @staticmethod
     def is_column_sep(seq: Sequence[str]):
         return all(x in (" |+") for x in seq)
-
-    @classmethod
-    def group_columns(cls, blanks: Sequence[int]):
-        print("blank")
-        print(blanks)
-        column_groups: List[Tuple[int, int]] = []
-        if blanks[0] != 0:
-            column_groups.append((0, blanks.pop(0)))
-        return column_groups
 
     def find_parameters(self) -> None:
         r"""
@@ -152,3 +146,17 @@ class TextLog:
         then capture nearest total boundaries of `\s\s\w` and `\w\b`
         """
         pass  # pylint: disable=unnecessary-pass
+
+
+def make_slices(ids: List[int]) -> List[slice]:
+    """
+    Turn a list with consecutive integers, e.g.
+        [1, 2, 3, 8, 9]
+    Into slices
+        [slice(1, 4), slice(8, 10)]
+    """
+
+    for _, g in groupby(enumerate(ids), key=lambda x: x[0] - x[1]):
+        consecutives = [*map(itemgetter(1), g)]
+        yield slice(consecutives[0], consecutives[-1] + 1)
+    # return column_groups
