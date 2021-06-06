@@ -126,7 +126,7 @@ def lint_typing(session, subfolder=PACKAGE_NAME):
 
 
 @nox.session(python=supported_pythons(), reuse_venv=False)
-def pytest(session):
+def test(session):
     session.install("-r", "requirements-test.txt")
     session.install("-e", ".")
     cmd = ["python", "-m", "coverage", "run", "-m", "pytest"]
@@ -135,7 +135,7 @@ def pytest(session):
 
 
 @nox.session(python=False)
-def coverage(session):
+def test_coverage(session):
     session.run("coveralls", success_codes=[0, 1])
     session.run("python", "-m", "coverage", "html")
     output = Path("build/coverage/index.html").resolve()
