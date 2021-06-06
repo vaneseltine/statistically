@@ -13,6 +13,9 @@
   <a href="https://coveralls.io/github/vaneseltine/statistically">
     <img alt="Test coverage at Coveralls" src="https://img.shields.io/coveralls/github/vaneseltine/statistically?style=flat-square" />
   </a>
+  <a href="https://github.com/vaneseltine/statistically/actions">
+    <img alt="Build at Github" src="https://img.shields.io/github/workflow/status/vaneseltine/statistically/Python%20package?style=flat-square" />
+  </a>
   <a href="https://github.com/vaneseltine/statistically">
     <img alt="Latest commit at GitHub" src="https://img.shields.io/github/last-commit/vaneseltine/statistically?style=flat-square" />
   </a>
