@@ -4,6 +4,7 @@ import sys
 from glob import glob
 from pathlib import Path
 from typing import Optional
+
 from .log import TextLog
 
 __version__ = "0.1.0dev0"

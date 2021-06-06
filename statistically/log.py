@@ -1,12 +1,10 @@
 import re
 from itertools import groupby
-from operator import eq, itemgetter
+from operator import itemgetter
 from pathlib import Path
-from typing import List, Sequence, Tuple, Union
+from typing import Dict, Generator, List, Sequence, Tuple, Union
 
-import pandas as pd
-
-from .stat import N, P, Stat
+import pandas as pd  # type: ignore
 
 Lines = List[str]
 
@@ -16,6 +14,7 @@ line_only = re.compile(r"^[-+]+$")
 LINE_HORIZONTAL = "h"
 LINE_HAS_COLUMN = "c"
 LINE_UNUSED = " "
+EQUALS = r"!!EQUALS!!"
 
 
 class TextLog:
@@ -24,51 +23,21 @@ class TextLog:
 
     def __init__(self, path: Union[Path, str]) -> None:
         self.lines = self.make_lines(path)
-        self.tables = self.get_tables(self.lines)
         self.stats = self.get_more_stats(self.lines)
+        self.tables = self.get_tables(self.lines)
         # self.tables = self.main_tables + self.stats
 
-    def get_tables(self, lines: Lines):
-        table_slices = self.find_tables(lines)
+    @staticmethod
+    def get_more_stats(lines: Lines) -> Dict[str, str]:
+        return EquationBuilder(lines).to_dict()
+
+    @classmethod
+    def get_tables(cls, lines: Lines) -> List["Table"]:
+        table_slices = cls.find_tables(lines)
         # print(self.table_boundaries)
         return [Table(lines[ts]) for ts in table_slices]
 
-    def get_more_stats(self, lines: Lines):
-        lines_with_equals = [l for l in lines if re.search(r"=", l)]
-        params = dict(self.get_param(line) for line in lines_with_equals)
-        print("params", params)
-        # exit()
-        return params
-
-    @classmethod
-    def get_param(cls, line: str) -> Tuple[str, str]:
-        # remove space around = (sometimes it's a lot)
-        squashed = "  " + re.sub(r"\s+=\s+", "=~=~", line) + "  "
-        # split by double spaces which "should" bracket params
-        segments = squashed.split("  ")
-        # dump strings without =
-        relevant = [s for s in segments if re.search(r"=~=~", s)]
-        # convert strings into cleaned up tuples
-        for param in relevant:
-            equation = cls.clean_equation(param)
-            print("eq", equation)
-            return equation
-
-    @classmethod
-    def clean_equation(cls, equation: str) -> Tuple[str, str]:
-        # print("preclean", equation)
-        cleaned = [s.strip() for s in equation.split("=~=~")]
-        # print(" cleaned", cleaned)
-        return tuple(cleaned)
-        # for x, y in s.split("="):
-        #     print(x, y)
-
-        # final = [l.strip() for x in relevant for l in x.split("=")]
-        # print(final)
-        print("")
-        return final
-
-    def report(self):
+    def report(self) -> None:
         for i, line in enumerate(self.lines):
             print(f"{i:>4} {line}")
 
@@ -120,7 +89,9 @@ class Table:
         return self.df
 
     @staticmethod
-    def create_column_names(text_columns: List[List[str]], header_count: int):
+    def create_column_names(
+        text_columns: List[List[str]], header_count: int
+    ) -> List[str]:
         header_cols = [c[:header_count] for c in text_columns]
         column_names = [" ".join(c).strip() for c in header_cols]
         return column_names
@@ -139,8 +110,8 @@ class Table:
     @classmethod
     def determine_horizontal_range(cls, lines: Lines) -> slice:
         line_matches = [line_horiz.search(l) for l in lines if line_horiz.search(l)]
-        table_min = min(l.span()[0] for l in line_matches)
-        table_max = max(l.span()[-1] for l in line_matches) + 1
+        table_min = min(l.span()[0] for l in line_matches)  # type: ignore
+        table_max = max(l.span()[-1] for l in line_matches) + 1  # type: ignore
         return slice(table_min, table_max)
 
     @classmethod
@@ -161,14 +132,14 @@ class Table:
         return groups_of_columns
 
     @classmethod
-    def find_useful_columns(cls, lines: Lines):
+    def find_useful_columns(cls, lines: Lines) -> List[int]:
         full_length = max(len(l) for l in lines)
         lines = [f"{l:<{full_length}}" for l in lines]
         rotated_lines = enumerate(zip(*lines))
         return [i for i, col in rotated_lines if not cls.is_column_sep(col)]
 
     @staticmethod
-    def is_column_sep(seq: Sequence[str]):
+    def is_column_sep(seq: Sequence[str]) -> bool:
         return all(x in (" |+") for x in seq)
 
     def find_parameters(self) -> None:
@@ -201,7 +172,35 @@ class Table:
         pass  # pylint: disable=unnecessary-pass
 
 
-def make_slices(ids: List[int]) -> List[slice]:
+ParamList = List[Tuple[str, str]]
+
+
+class EquationBuilder:
+
+    arbitary_spacer = "                      "
+
+    def __init__(self, lines: Lines) -> None:
+        lines_with_equals = [l for l in lines if re.search(r"=", l)]
+        # make a giant string -- no reason to keep row by row
+        joined = self.arbitary_spacer.join(lines_with_equals)
+        # remove space around = (sometimes it's a lot)
+        tagged = "  " + re.sub(r"\s+=\s+", EQUALS, joined) + "  "
+        # split by double spaces which "should" bracket params
+        segments = [x for x in tagged.split("  ") if EQUALS in x]
+        # separate and clean strings into list of tuples
+        self.params = [tuple(y.strip() for y in x.split(EQUALS)) for x in segments]
+
+    def to_dict(self) -> Dict[str, str]:
+        return dict(self.params)  # type: ignore
+
+    def keys(self) -> List[str]:
+        return list(self.to_dict())
+
+    def __getitem__(self, key: str) -> str:
+        return self.to_dict()[key]
+
+
+def make_slices(ids: List[int]) -> Generator[slice, None, None]:
     """
     Turn a list with consecutive integers, e.g.
         [1, 2, 3, 8, 9]
