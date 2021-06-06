@@ -1,8 +1,6 @@
 import pytest
 
-from statistically.log import TextLog
-
-# from . import TEST_RESULTS_DIRECTORY
+from statistically import statistically as st
 
 
 @pytest.mark.parametrize(
@@ -18,29 +16,7 @@ from statistically.log import TextLog
     ],
 )
 def test_find_line(line, code):
-    assert TextLog.find_line(line) == code
-
-
-# @pytest.mark.parametrize(
-#     "logfile, boundaries",
-#     [
-#         ("logit.txt", [slice(19, 26)]),
-#         ("margins1.txt", [slice(12, 20)]),
-#         ("margins4.txt", [slice(12, 25)]),
-#         ("margins8.txt", [slice(12, 24)]),
-#         ("nbreg_offset.txt", [slice(12, 26)]),
-#         ("nbreg.txt", [slice(31, 44)]),
-#         ("probit.txt", [slice(19, 26)]),
-#         ("regress.txt", [slice(7, 13), slice(14, 21)]),
-#         ("summarize.txt", [slice(7, 23)]),
-#         ("table_contents.txt", [slice(7, 18)]),
-#         ("table.txt", [slice(7, 18)]),
-#     ],
-# )
-# def test_log_boundaries(logfile, boundaries):
-#     path = TEST_RESULTS_DIRECTORY / logfile
-#     log = TextLog(path)
-#     assert log.table_slices == boundaries
+    assert st.TextLog.find_line(line) == code
 
 
 @pytest.mark.parametrize(
@@ -86,4 +62,45 @@ def test_find_line(line, code):
     ],
 )
 def test_boundaries(lines, boundaries):
-    assert TextLog.find_tables(lines) == boundaries
+    assert st.TextLog.find_tables(lines) == boundaries
+
+
+def test_does_not_immediately_explode():
+    assert st
+
+
+@pytest.mark.parametrize(
+    "line, result",
+    [
+        (["  x = 5  "], {"x": "5"}),
+        (["  x = 5"], {"x": "5"}),
+        (["x = 5  "], {"x": "5"}),
+        (["x  x = 5  "], {"x": "5"}),
+        (["x  x = 5  x"], {"x": "5"}),
+        (["  x = 5  x"], {"x": "5"}),
+    ],
+)
+def test_single_equations(line, result):
+    assert dict(st.EquationBuilder(line)) == result
+
+
+@pytest.mark.parametrize(
+    "line, result",
+    [
+        (["two = 2    five = 5  x"], {"two": "2", "five": "5"}),
+    ],
+)
+def test_multiple_equations(line, result):
+    assert dict(st.EquationBuilder(line)) == result
+
+
+@pytest.mark.parametrize(
+    "full_list, slices",
+    (
+        [[1, 2, 3, 8, 9], [slice(1, 4), slice(8, 10)]],
+        [[1, 2, 3], [slice(1, 4)]],
+        [[3, 4, 9, 10], [slice(3, 5), slice(9, 11)]],
+    ),
+)
+def test_make_slices(full_list, slices):
+    assert [*st.make_slices(full_list)] == slices
