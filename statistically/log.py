@@ -1,8 +1,8 @@
 import re
 from itertools import groupby
-from operator import itemgetter
+from operator import eq, itemgetter
 from pathlib import Path
-from typing import List, Sequence, Union
+from typing import List, Sequence, Tuple, Union
 
 import pandas as pd
 
@@ -24,9 +24,9 @@ class TextLog:
 
     def __init__(self, path: Union[Path, str]) -> None:
         self.lines = self.make_lines(path)
-        self.main_tables = self.get_tables(self.lines)
+        self.tables = self.get_tables(self.lines)
         self.stats = self.get_more_stats(self.lines)
-        self.tables = self.main_tables + self.stats
+        # self.tables = self.main_tables + self.stats
 
     def get_tables(self, lines: Lines):
         table_slices = self.find_tables(lines)
@@ -35,17 +35,38 @@ class TextLog:
 
     def get_more_stats(self, lines: Lines):
         lines_with_equals = [l for l in lines if re.search(r"=", l)]
-        for line in lines_with_equals:
-            param = self.get_param(line)
-        exit()
+        params = dict(self.get_param(line) for line in lines_with_equals)
+        print("params", params)
+        # exit()
+        return params
 
     @classmethod
-    def get_param(cls, line) -> List[str]:
-        print(line)
-        squasher = re.compile(r"\s+=\s+")
-        squashed = squasher.sub("=", line)
-        final = squashed
-        return [l.strip() for l in final.split("=")]
+    def get_param(cls, line: str) -> Tuple[str, str]:
+        # remove space around = (sometimes it's a lot)
+        squashed = "  " + re.sub(r"\s+=\s+", "=~=~", line) + "  "
+        # split by double spaces which "should" bracket params
+        segments = squashed.split("  ")
+        # dump strings without =
+        relevant = [s for s in segments if re.search(r"=~=~", s)]
+        # convert strings into cleaned up tuples
+        for param in relevant:
+            equation = cls.clean_equation(param)
+            print("eq", equation)
+            return equation
+
+    @classmethod
+    def clean_equation(cls, equation: str) -> Tuple[str, str]:
+        # print("preclean", equation)
+        cleaned = [s.strip() for s in equation.split("=~=~")]
+        # print(" cleaned", cleaned)
+        return tuple(cleaned)
+        # for x, y in s.split("="):
+        #     print(x, y)
+
+        # final = [l.strip() for x in relevant for l in x.split("=")]
+        # print(final)
+        print("")
+        return final
 
     def report(self):
         for i, line in enumerate(self.lines):

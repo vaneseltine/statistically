@@ -25,6 +25,7 @@ def main() -> int:
         log.report()
         for tab in log.tables:
             print(tab.to_df())
+        print(log.stats)
     return 0
 
 
