@@ -30,10 +30,13 @@ jobs:
         python -m pip install -r requirements-test.txt
     - name: Lint with flake8
       run: |
-        python -m flake8 
+        python -m flake8 statistically
     - name: Lint with pylint
       run: |
-        python -m pylint 
+        python -m pylint statistically
+    - name: Lint with mypy
+      run: |
+        python -m mypy --strict statistically
     - name: Test with pytest
       run: |
         pytest
