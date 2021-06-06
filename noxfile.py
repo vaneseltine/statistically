@@ -10,6 +10,7 @@ from pathlib import Path
 import nox
 
 nox.options.stop_on_first_error = True
+nox.options.reuse_existing_virtualenvs = True
 
 PACKAGE_NAME = "statistically"
 MODULE_DEFINING_VERSION = "./statistically/statistically.py"
