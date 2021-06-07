@@ -1,0 +1,19 @@
+
+. estat vif
+
+    Variable |       VIF       1/VIF  
+-------------+----------------------
+      weight |     25.12    0.039816
+      length |     15.03    0.066539
+displacement |     10.56    0.094664
+        turn |      5.04    0.198571
+  gear_ratio |      4.52    0.221452
+     foreign |      3.46    0.288675
+         mpg |      3.24    0.308194
+       trunk |      2.89    0.346190
+       price |      2.48    0.403293
+    headroom |      1.91    0.524585
+-------------+----------------------
+    Mean VIF |      7.42
+
+. capture log close

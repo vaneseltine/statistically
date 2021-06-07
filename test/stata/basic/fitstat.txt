@@ -1,0 +1,26 @@
+
+. fitstat
+
+                         |     regress 
+-------------------------+-------------
+Log-likelihood           |             
+                   Model |    -686.540 
+          Intercept-only |    -695.713 
+-------------------------+-------------
+Chi-square               |             
+         Deviance(df=72) |    1373.079 
+-------------------------+-------------
+R2                       |             
+                      R2 |       0.220 
+             Adjusted R2 |       0.209 
+                McFadden |       0.013 
+      McFadden(adjusted) |       0.010 
+            Cox-Snell/ML |       0.220 
+  Cragg-Uhler/Nagelkerke |       0.220 
+-------------------------+-------------
+IC                       |             
+                     AIC |    1377.079 
+        AIC divided by N |      18.609 
+               BIC(df=2) |    1381.687 
+
+. capture log close

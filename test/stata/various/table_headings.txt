@@ -1,0 +1,22 @@
+
+. sysuse auto, clear
+(1978 Automobile Data)
+
+. /*
+>     Here the heading "Car type" crosses the columns
+> */
+. tab rep78 foreign
+
+    Repair |
+    Record |       Car type
+      1978 |  Domestic    Foreign |     Total
+-----------+----------------------+----------
+         1 |         2          0 |         2 
+         2 |         8          0 |         8 
+         3 |        27          3 |        30 
+         4 |         9          9 |        18 
+         5 |         2          9 |        11 
+-----------+----------------------+----------
+     Total |        48         21 |        69 
+
+. capture log close

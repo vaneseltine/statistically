@@ -1,7 +1,6 @@
 
 . /*
->     nbreg
->     Remarks and examples
+>     nbreg - Remarks and examples
 > */
 . nbreg deaths i.cohort
 

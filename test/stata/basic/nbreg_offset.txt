@@ -1,7 +1,6 @@
 
 . /*
->     nbreg with offset
->     Remarks and examples
+>     nbreg with offset - Remarks and examples
 > */
 . nbreg deaths i.cohort, offset(logexp) nolog
 

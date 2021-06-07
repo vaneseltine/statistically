@@ -1,7 +1,6 @@
 
 . /*
->     regress
->     Example 1: Basic linear regression
+>     regress - Example 1: Basic linear regression
 > */
 . regress mpg weight foreign
 

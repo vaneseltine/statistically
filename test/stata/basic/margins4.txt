@@ -1,7 +1,6 @@
 
 . /*
->     margins
->     Example 4: Multiple margins from one command
+>     margins - Example 4: Multiple margins from one command
 > */
 . margins sex group
 

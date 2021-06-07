@@ -1,7 +1,6 @@
 
 . /*
->     logit
->     Example 1
+>     logit - Example 1
 > */
 . logit foreign weight mpg
 

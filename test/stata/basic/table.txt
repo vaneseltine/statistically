@@ -1,7 +1,6 @@
 
 . /*
->     table
->     Example 1
+>     table - Example 1
 > */
 . table rep78
 

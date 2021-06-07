@@ -1,7 +1,6 @@
 
 . /*
->     margins
->     Example 8: Margins of interactions
+>     margins Example 8: Margins of interactions
 > */
 . margins sex#group
 

@@ -1,7 +1,6 @@
 
 . /*
->     probit
->     Example 1
+>     probit - Example 1
 > */
 . probit foreign weight mpg
 

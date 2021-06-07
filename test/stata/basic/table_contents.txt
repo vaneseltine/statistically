@@ -1,7 +1,6 @@
 
 . /*
->     table with contents
->     Example 1 with multiple statistics
+>     table with contents - Example 1 with multiple statistics
 > */
 . table rep78, contents(n mpg mean mpg sd mpg median mpg)
 

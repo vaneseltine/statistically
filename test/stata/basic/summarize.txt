@@ -1,7 +1,6 @@
 
 . /*
->     summarize
->     Example 1: summarize with the separator() option
+>     summarize - Example 1: summarize with the separator() option
 > */
 . summarize, separator(4)
 
