@@ -12,6 +12,7 @@ import pandas as pd  # type: ignore
 
 Lines = List[str]
 
+
 line_horiz = re.compile(r"(?<=)[-+]+(?=\W)")
 line_only = re.compile(r"^[-+]+$")
 
@@ -142,7 +143,6 @@ class TextLog:
     @classmethod
     def find_tables(cls, lines: Lines) -> List[slice]:
         tables_string = "".join(cls.find_line(l) for l in lines)
-        # print(tables_string)
         table_quantifier = re.compile(
             r"""(?x)  # allow these comments
             (?<=\b)   # boundary, including start of line
@@ -151,7 +151,17 @@ class TextLog:
             """
         )
         table_groups = table_quantifier.finditer(tables_string)
-        return [slice(*x.span()) for x in table_groups]
+        table_slices = [slice(*x.span()) for x in table_groups if cls.long_enough(x)]
+        logging.getLogger().debug(f"{table_slices}")
+        return table_slices
+
+    @classmethod
+    def long_enough(cls, matched: re.Match):
+        start, finish = matched.span()
+        if finish - start <= 2:
+            logging.getLogger().debug(f"Lines {start}-{finish} too short for table.")
+            return False
+        return True
 
     @classmethod
     def find_line(cls, line: str) -> str:
@@ -235,9 +245,6 @@ class Table:
     @staticmethod
     def is_column_sep(seq: Sequence[str]) -> bool:
         return all(x in (" |+") for x in seq)
-
-
-ParamList = List[Tuple[str, str]]
 
 
 class EquationBuilder:

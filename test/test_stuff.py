@@ -1,3 +1,4 @@
+# type: ignore
 import pytest
 
 from statistically import statistically as st
