@@ -43,9 +43,13 @@ def main() -> int:
         # print(Path(filename).read_text())
         log = TextLog(filename)
         log.report()
-        for tab in log.tables:
-            print(tab.to_df())
-        print(log.stats)
+        for cmd, items in log.cmd_dict.items():
+            print(cmd)
+            for item in items:
+                print(item)
+        # for tab in log.tables:
+        #     print(tab.to_df())
+        # print(log.stats)
         print("\n\n")
     return 0
 
@@ -112,33 +116,71 @@ def create_logger(debug: bool = False, log_file: Optional[str] = None) -> None:
     # return new_logger
 
 
+class Command:
+
+    command_pattern = re.compile(r"^\. ([\w]+)")
+
+    def __init__(self, line: str, start: int, end: int) -> None:
+        self.core = self.command_pattern.search(line).group(1)  # type: ignore
+        self.slice = slice(start, end)
+        self.line = line
+
+    @classmethod
+    def get_commands(cls, lines: Lines) -> List["Command"]:
+        comm_lines = [(l, i) for i, l in enumerate(lines) if cls.is_command(l)]
+        endings = [i for _, i in comm_lines[1:]] + [len(lines)]
+        all_cmds = [cls(*line_info, end) for line_info, end in zip(comm_lines, endings)]
+        logging.getLogger().debug(str(all_cmds))
+        return all_cmds
+
+    @classmethod
+    def is_command(cls, line: str) -> bool:
+        return cls.command_pattern.search(line) is not None
+
+    def __str__(self) -> str:
+        start = self.slice.start
+        end = self.slice.stop - 1
+        return f"{self.core}({start}-{end})"
+
+    def __repr__(self) -> str:
+        return f"<Command({self.core}, {self.slice.start})>"
+
+
 class TextLog:
 
     column_finder = re.compile(r" [|+]+(\s|$)")
 
     def __init__(self, path: Union[Path, str]) -> None:
-        self.lines = self.make_lines(path)
-        self.stats = self.get_more_stats(self.lines)
-        self.tables = self.get_tables(self.lines)
+        self.lines = Path(path).read_text().splitlines()
+        # add a phantom line to sync with doc line numbers
+        self.lines = [""] + self.lines
+        self.commands = self.get_commands(self.lines)
+        self.cmd_dict: Dict[Command, List[Union[pd.DataFrame, Dict[str, str]]]] = {}
+        for cmd in self.commands:
+            logging.getLogger().debug(cmd)
+            cmd_lines = self.lines[cmd.slice]
+            cmd_stats = self.get_stats(cmd_lines)
+            cmd_tables = self.get_tables(cmd_lines)
+            self.cmd_dict[cmd] = [*cmd_tables, cmd_stats]
         # self.tables = self.main_tables + self.stats
 
+    @classmethod
+    def get_commands(cls, lines: Lines) -> List[Command]:
+        return Command.get_commands(lines)
+
     @staticmethod
-    def get_more_stats(lines: Lines) -> Dict[str, str]:
+    def get_stats(lines: Lines) -> Dict[str, str]:
         return EquationBuilder(lines).to_dict()
 
     @classmethod
-    def get_tables(cls, lines: Lines) -> List["Table"]:
+    def get_tables(cls, lines: Lines) -> List[pd.DataFrame]:
         table_slices = cls.find_tables(lines)
         # print(self.table_boundaries)
-        return [Table(lines[ts]) for ts in table_slices]
+        return [Table(lines[ts]).to_df() for ts in table_slices]
 
     def report(self) -> None:
         for i, line in enumerate(self.lines):
             print(f"{i:>4} {line}")
-
-    @staticmethod
-    def make_lines(path: Union[Path, str]) -> Lines:
-        return Path(path).read_text().splitlines()
 
     @classmethod
     def find_tables(cls, lines: Lines) -> List[slice]:
@@ -156,7 +198,7 @@ class TextLog:
         return table_slices
 
     @classmethod
-    def long_enough(cls, matched: re.Match):
+    def long_enough(cls, matched: re.Match) -> bool:  # type: ignore
         start, finish = matched.span()
         if finish - start <= 2:
             logging.getLogger().debug(f"Lines {start}-{finish} too short for table.")
