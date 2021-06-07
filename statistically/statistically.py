@@ -148,7 +148,7 @@ class Command:
 
 class TextLog:
 
-    column_finder = re.compile(r" [|+]+(\s|$)")
+    column_finder = re.compile(r"[|+]+(\s|$)")
 
     def __init__(self, path: Union[Path, str]) -> None:
         self.lines = Path(path).read_text().splitlines()
