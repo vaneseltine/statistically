@@ -228,8 +228,32 @@ class Table:
         # print(self.columns)
         key_rows = [*zip(*self.text_columns)][header_count:]
         # print(key_rows)
-        self.df = pd.DataFrame(key_rows, columns=column_names)
+        final_rows = self.finalize_rows(key_rows)
+        self.df = pd.DataFrame(final_rows, columns=column_names)
         # set_index("colname", verify_integrity=True)
+
+    def finalize_rows(self, rows: List[Tuple[str, ...]]):
+        print(rows)
+        new_rows: List[Tuple[str, ...]] = []
+        label: str = ""
+        for row in rows:
+            var, *content = row
+            # print([i, var])
+            if all(val == "" for val in content):
+                print("THIS IS A LABEL")
+                label: str = var.strip()
+                continue
+            elif var[-1] == " " and var[-2] != " ":
+                print("THIS IS A CATEGORY")
+                new_label = f"{label} = {var.strip()}"
+                new_row = (new_label, *content)
+            else:
+                print("NEITHER LABEL NOR CATEGORY")
+                label = ""
+                new_row = (var.strip(), *content)
+            print(new_row)
+            new_rows.append(new_row)
+        return new_rows
 
     def to_df(self) -> pd.DataFrame:
         return self.df
@@ -239,7 +263,9 @@ class Table:
         text_columns: List[List[str]], header_count: int
     ) -> List[str]:
         header_cols = [c[:header_count] for c in text_columns]
-        column_names = [" ".join(c).strip() for c in header_cols]
+        column_names = [
+            " ".join(c).strip() or f"col{i}" for i, c in enumerate(header_cols)
+        ]
         return column_names
 
     @classmethod
@@ -272,9 +298,7 @@ class Table:
         content_lines = [l for l in lines if re.search(r"\w", l)]
         good_cols = cls.find_useful_columns(content_lines)
         col_slices = [*make_slices(good_cols)]
-        groups_of_columns = [
-            [l[cs].strip() for l in content_lines] for cs in col_slices
-        ]
+        groups_of_columns = [[l[cs] for l in content_lines] for cs in col_slices]
         return groups_of_columns
 
     @classmethod
