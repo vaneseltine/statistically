@@ -20,7 +20,7 @@ LINE_HORIZONTAL = "h"
 LINE_HAS_COLUMN = "c"
 LINE_UNUSED = " "
 
-__version__ = "0.1.0dev0"
+__version__ = "0.1.1"
 
 UserInput = str
 
