@@ -232,26 +232,27 @@ class Table:
         self.df = pd.DataFrame(final_rows, columns=column_names)
         # set_index("colname", verify_integrity=True)
 
-    def finalize_rows(self, rows: List[Tuple[str, ...]]):
-        print(rows)
+    @classmethod
+    def finalize_rows(cls, rows: List[Tuple[str, ...]]) -> List[Tuple[str, ...]]:
+        # print(rows)
         new_rows: List[Tuple[str, ...]] = []
         label: str = ""
         for row in rows:
             var, *content = row
             # print([i, var])
             if all(val == "" for val in content):
-                print("THIS IS A LABEL")
-                label: str = var.strip()
+                # print("THIS IS A LABEL")
+                label = var.strip()
                 continue
-            elif var[-1] == " " and var[-2] != " ":
-                print("THIS IS A CATEGORY")
+            if var[-1] == " " and var[-2] != " ":
+                # print("THIS IS A CATEGORY")
                 new_label = f"{label} = {var.strip()}"
                 new_row = (new_label, *content)
             else:
-                print("NEITHER LABEL NOR CATEGORY")
+                # print("NEITHER LABEL NOR CATEGORY")
                 label = ""
                 new_row = (var.strip(), *content)
-            print(new_row)
+            # print(new_row)
             new_rows.append(new_row)
         return new_rows
 
