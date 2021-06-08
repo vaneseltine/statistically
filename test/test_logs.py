@@ -22,3 +22,14 @@ def test_estat_vif_with_interaction():
     t = st.Table(loglines)
     print(t.to_df())
     assert 12 <= len(t.to_df()) <= 16
+
+
+def test_nested_variables():
+    """
+    The way Stata subtly positions headings on i.vars
+    Makes it difficult to capture the difference when multiple things are represented
+    """
+    loglines = (STATA_OUTPUT / "basic" / "margins4.txt").read_text().splitlines()
+    t = st.Table(loglines)
+    df = t.to_df()
+    assert "group" in df[[0]]
