@@ -142,15 +142,15 @@ def test_coverage(session):
     print(f"Coverage at {output}")
 
 
-@nox.session(python=False)
-def deploy_to_pypi(session):
-    if not pypi_needs_new_version():
-        session.skip("PyPI already up to date")
-    print("Current version is ready to deploy to PyPI.")
-    shutil.rmtree(DIST_DIR, ignore_errors=True)
-    DIST_DIR.mkdir()
-    session.run("python", "setup.py", "sdist", "bdist_wheel", f"--dist-dir={DIST_DIR}")
-    session.run("python", "-m", "twine", "upload", str(DIST_DIR.joinpath("*")))
+# @nox.session(python=False)
+# def deploy_to_pypi(session):
+#     if not pypi_needs_new_version():
+#         session.skip("PyPI already up to date")
+#     print("Current version is ready to deploy to PyPI.")
+#     shutil.rmtree(DIST_DIR, ignore_errors=True)
+#     DIST_DIR.mkdir()
+#     session.run("python", "setup.py", "sdist", "bdist_wheel", f"--dist-dir={DIST_DIR}")
+#     session.run("python", "-m", "twine", "upload", str(DIST_DIR.joinpath("*")))
 
 
 @nox.session(python=False)

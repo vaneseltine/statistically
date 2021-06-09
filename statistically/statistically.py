@@ -373,7 +373,7 @@ def make_slices(ids: List[int]) -> Generator[slice, None, None]:
     # return column_groups
 
 
-def sort_variable_lists(cols: List[List[str]]):
+def sort_variable_lists(varlists: List[List[str]]) -> List[str]:
     """
     Sort a semicoherent set of growing lists together sequentially, e.g.,
 
@@ -387,7 +387,8 @@ def sort_variable_lists(cols: List[List[str]]):
         egg, spam, ham, mushroom, pancakes, zucchini, toast, bacon, cheese
 
     """
-    primary, *secondaries = cols
+    primary, *secondaries = varlists
+    all_unique_items = set(item for sublist in varlists for item in sublist)
 
     for secondary in secondaries:
 
@@ -424,9 +425,14 @@ def sort_variable_lists(cols: List[List[str]]):
         remaining_primary = primary[pos:]
         remaining_secondary = queued_elements
         # the easiest way to handle these is... to sort them together and append
-        if remaining_primary or remaining_secondary:
+        if remaining_primary and remaining_secondary:
             new_list += sort_variable_lists([remaining_primary, remaining_secondary])
+        elif remaining_primary or remaining_secondary:
+            new_list += [x for x in remaining_primary if x not in new_list]
+            new_list += [x for x in remaining_secondary if x not in new_list]
 
         # the final sorted list becomes the primary for the next round
         primary = new_list
+
+    assert set(primary) == all_unique_items
     return primary

@@ -171,3 +171,27 @@ def test_make_slices(full_list, slices):
 )
 def test_sort_variables(inlist, outlist):
     assert st.sort_variable_lists(inlist) == outlist
+
+
+@pytest.mark.xfail(reason="Harder to deal with misarranged lists...")
+@pytest.mark.parametrize(
+    "inlist, outlist",
+    [
+        (
+            [
+                "egg spam bacon".split(),
+                "egg bacon spam".split(),
+            ],
+            "egg spam bacon".split(),
+        ),
+        (
+            [
+                "egg spam bacon".split(),
+                "egg bacon spam sausage".split(),
+            ],
+            "egg spam bacon sausage".split(),
+        ),
+    ],
+)
+def test_sort_bad_variables(inlist, outlist):
+    assert st.sort_variable_lists(inlist) == outlist
