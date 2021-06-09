@@ -163,6 +163,15 @@ def test_make_slices(full_list, slices):
                 "egg spam bacon".split(),
                 "egg spam ham mushroom toast bacon".split(),
                 "egg spam pancakes zucchini toast bacon".split(),
+                "egg spam pancakes zucchini toast bacon".split(),
+            ],
+            "egg spam ham mushroom pancakes zucchini toast bacon".split(),
+        ),
+        (
+            [
+                "egg spam bacon".split(),
+                "egg spam ham mushroom toast bacon".split(),
+                "egg spam pancakes zucchini toast bacon".split(),
                 "egg spam pancakes zucchini toast bacon cheese".split(),
             ],
             "egg spam ham mushroom pancakes zucchini toast bacon cheese".split(),
@@ -194,4 +203,18 @@ def test_sort_variables(inlist, outlist):
     ],
 )
 def test_sort_bad_variables(inlist, outlist):
+    assert st.sort_variable_lists(inlist) == outlist
+
+
+@pytest.mark.xfail(reason="incompatible sort, with a before/after gf and gu")
+def test_wrongly_duplicating():
+    inlist = [
+        "sr sb i N".split(),
+        "sr sb gf gu a u2 i9 iE i N".split(),
+        "sr sb gf gu a u2 i9 iE i N".split(),
+        "sr sb a sc.ar sc.ab gf gu u2 i9 iE i N".split(),
+        "sr sb gf gu zrf zru zbf zbu a u2 i9 iE i N".split(),
+        "sr sb gf gu zrf zru zbf zbu a u2 i9 iE i N".split(),
+    ]
+    outlist = "sr sb gf gu zrf zru zbf zbu a u2 i9 iE i N"
     assert st.sort_variable_lists(inlist) == outlist
