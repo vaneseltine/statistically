@@ -371,3 +371,62 @@ def make_slices(ids: List[int]) -> Generator[slice, None, None]:
         consecutives = [*map(itemgetter(1), grp)]
         yield slice(consecutives[0], consecutives[-1] + 1)
     # return column_groups
+
+
+def sort_variable_lists(cols: List[List[str]]):
+    """
+    Sort a semicoherent set of growing lists together sequentially, e.g.,
+
+        egg, spam, bacon
+        egg, spam, ham, mushroom, toast, bacon
+        egg, spam, pancakes, zucchini, toast, bacon
+        egg, spam, pancakes, zucchini, toast, bacon, cheese
+
+    Produces
+
+        egg, spam, ham, mushroom, pancakes, zucchini, toast, bacon, cheese
+
+    """
+    primary, *secondaries = cols
+
+    for secondary in secondaries:
+
+        new_list = []
+        # pos keeps track of where we are in the primary list
+        pos = 0
+        queued_elements = []
+        for elem in secondary:
+
+            # once we go beyond the primary list, every element is appended
+            if pos >= len(primary):
+                new_list += [elem]
+                continue
+
+            # otherwise, elements from secondary list are queued to be checked against primary
+            queued_elements += [elem]
+
+            # unrecognized primary elements are passed along to the new list
+            if primary[pos] not in secondary:
+                new_list += [primary[pos]]
+                pos += 1
+                continue
+
+            # when a matching existing element is found, in goes the queue
+            if elem == primary[pos]:
+                new_list += queued_elements
+                queued_elements = []
+                pos += 1
+                continue
+
+            # else we continue with our growing queue
+
+        # now that we have gone through the loop, we might have lingering items
+        remaining_primary = primary[pos:]
+        remaining_secondary = queued_elements
+        # the easiest way to handle these is... to sort them together and append
+        if remaining_primary or remaining_secondary:
+            new_list += sort_variable_lists([remaining_primary, remaining_secondary])
+
+        # the final sorted list becomes the primary for the next round
+        primary = new_list
+    return primary

@@ -105,3 +105,69 @@ def test_multiple_equations(line, result):
 )
 def test_make_slices(full_list, slices):
     assert [*st.make_slices(full_list)] == slices
+
+
+@pytest.mark.parametrize(
+    "inlist, outlist",
+    [
+        (
+            ["egg spam bacon".split()],
+            "egg spam bacon".split(),
+        ),
+        (
+            [
+                "egg spam bacon".split(),
+                "egg spam bacon".split(),
+            ],
+            "egg spam bacon".split(),
+        ),
+        (
+            [
+                "eg sp ba".split(),
+                "eg sp ha mu to ba".split(),
+            ],
+            "eg sp ha mu to ba".split(),
+        ),
+        (
+            [
+                "eg sp ba".split(),
+                "eg sp ha".split(),
+            ],
+            "eg sp ba ha".split(),
+        ),
+        (
+            [
+                ["eg"],
+                "eg sp ba".split(),
+            ],
+            "eg sp ba".split(),
+        ),
+        (
+            [
+                "eg sp ba".split(),
+                "eg sp ha mu to ba".split(),
+                "eg sp pa zu to ba".split(),
+            ],
+            "eg sp ha mu pa zu to ba".split(),
+        ),
+        (
+            [
+                "egg spam bacon".split(),
+                "egg spam ham mushroom toast bacon".split(),
+                "egg spam pancakes zucchini toast bacon".split(),
+            ],
+            "egg spam ham mushroom pancakes zucchini toast bacon".split(),
+        ),
+        (
+            [
+                "egg spam bacon".split(),
+                "egg spam ham mushroom toast bacon".split(),
+                "egg spam pancakes zucchini toast bacon".split(),
+                "egg spam pancakes zucchini toast bacon cheese".split(),
+            ],
+            "egg spam ham mushroom pancakes zucchini toast bacon cheese".split(),
+        ),
+    ],
+)
+def test_sort_variables(inlist, outlist):
+    assert st.sort_variable_lists(inlist) == outlist
