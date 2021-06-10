@@ -6,12 +6,14 @@ from glob import glob
 from itertools import groupby
 from operator import itemgetter
 from pathlib import Path
-from typing import Dict, Generator, List, Optional, Sequence, Tuple, Union
+from typing import Dict, Generator, List, Optional, Sequence, Tuple, Union, cast
 
-import pandas as pd  # type: ignore
+import pandas as pd
+
+__version__ = "0.1.1"
 
 Lines = List[str]
-
+UserInput = str
 
 line_horiz = re.compile(r"(?<=)[-+]+(?=\W)")
 line_only = re.compile(r"^[-+]+$")
@@ -19,10 +21,6 @@ line_only = re.compile(r"^[-+]+$")
 LINE_HORIZONTAL = "h"
 LINE_HAS_COLUMN = "c"
 LINE_UNUSED = " "
-
-__version__ = "0.1.1"
-
-UserInput = str
 
 
 def main() -> int:
@@ -121,7 +119,10 @@ class Command:
     command_pattern = re.compile(r"^\. ([\w]+)")
 
     def __init__(self, line: str, start: int, end: int) -> None:
-        self.core = self.command_pattern.search(line).group(1)  # type: ignore
+        matched = self.command_pattern.search(line)
+        if matched is None:
+            raise AssertionError("Could not find a command in line `#{line}`")
+        self.core = matched.group(1)
         self.slice = slice(start, end)
         self.line = line
 
@@ -198,7 +199,9 @@ class TextLog:
         return table_slices
 
     @classmethod
-    def long_enough(cls, matched: re.Match) -> bool:  # type: ignore
+    def long_enough(cls, matched: "re.Match[str]") -> bool:
+        if not matched:
+            return False
         start, finish = matched.span()
         if finish - start <= 2:
             logging.getLogger().debug(f"Lines {start}-{finish} too short for table.")
@@ -283,8 +286,8 @@ class Table:
     @classmethod
     def determine_horizontal_range(cls, lines: Lines) -> slice:
         line_matches = [line_horiz.search(l) for l in lines if line_horiz.search(l)]
-        table_min = min(l.span()[0] for l in line_matches)  # type: ignore
-        table_max = max(l.span()[-1] for l in line_matches) + 1  # type: ignore
+        table_min = min(l.span()[0] for l in line_matches if l is not None)
+        table_max = max(l.span()[-1] for l in line_matches if l is not None)
         return slice(table_min, table_max)
 
     @classmethod
@@ -347,7 +350,9 @@ class EquationBuilder:
 
     @classmethod
     def clean_into_tuple(cls, s: str) -> Tuple[str, str]:
-        return tuple(y.strip() for y in s.split(cls.EQUALS))  # type: ignore
+        split_tuple = tuple(y.strip() for y in s.split(cls.EQUALS, maxsplit=1))
+        split_tuple = cast(Tuple[str, str], split_tuple)
+        return split_tuple
 
     def to_dict(self) -> Dict[str, str]:
         return dict(self.params)
@@ -392,10 +397,10 @@ def sort_variable_lists(varlists: List[List[str]]) -> List[str]:
 
     for secondary in secondaries:
 
-        new_list = []
+        new_list: List[str] = []
         # pos keeps track of where we are in the primary list
         pos = 0
-        queued_elements = []
+        queued_elements: List[str] = []
         for elem in secondary:
 
             # once we go beyond the primary list, every element is appended

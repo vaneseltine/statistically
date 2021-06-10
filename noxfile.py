@@ -2,9 +2,10 @@
 # type: ignore
 """Invoke via `nox` or `python -m nox`"""
 
+import json
 import re
-import shutil
 import subprocess
+import urllib.request
 from pathlib import Path
 
 import nox
@@ -88,18 +89,12 @@ def search_in_file(path, pattern, encoding="utf-8"):
 
 def get_pypi_version(encoding="utf-8"):
     """Scrape the latest version of this package on PyPI"""
-    try:
-        result = subprocess.check_output(
-            ["python", "-m", "pip", "search", PACKAGE_NAME]
-        ).decode(encoding)
-    except subprocess.CalledProcessError:
-        return None
-    complete_pattern = "^" + PACKAGE_NAME + r" \(" + VERSION_PATTERN
-    matched = re.search(complete_pattern, result)
-    try:
-        return matched.group(1)
-    except AttributeError:
-        return None
+
+    json_url = f"https://pypi.org/pypi/{PACKAGE_NAME}/json"
+    pypi_body = urllib.request.urlopen(json_url).read()
+    pypi_json = json.loads(pypi_body.decode(encoding))
+
+    return pypi_json["info"]["version"]
 
 
 @nox.session(python=False)
@@ -127,8 +122,8 @@ def lint_typing(session, subfolder=PACKAGE_NAME):
 
 @nox.session(python=supported_pythons(), reuse_venv=False)
 def test(session):
-    session.install("-r", "requirements-test.txt")
-    session.install("-e", ".")
+    session.install("pandas", "pytest", "coverage")
+    session.install(".")
     cmd = ["python", "-m", "coverage", "run", "-m", "pytest"]
     session.run(*cmd)
     session.run("python", "-m", "coverage", "report")
