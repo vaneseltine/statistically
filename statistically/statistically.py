@@ -6,7 +6,7 @@ from glob import glob
 from itertools import groupby
 from operator import itemgetter
 from pathlib import Path
-from typing import Dict, Generator, List, Optional, Sequence, Tuple, Union, cast
+from typing import Any, Dict, Generator, List, Optional, Sequence, Tuple, Union, cast
 
 import pandas as pd
 
@@ -392,52 +392,69 @@ def sort_variable_lists(varlists: List[List[str]]) -> List[str]:
         egg, spam, ham, mushroom, pancakes, zucchini, toast, bacon, cheese
 
     """
-    primary, *secondaries = varlists
     all_unique_items = set(item for sublist in varlists for item in sublist)
+    primary, *secondaries = varlists
+
+    lists_with_duplicate_vars = [x for x in varlists if not all_unique(x)]
+    if lists_with_duplicate_vars:
+        raise ValueError(
+            f"Cannot sort with lists that contain duplicates: {lists_with_duplicate_vars}"
+        )
 
     for secondary in secondaries:
+        primary = weave_lists(primary, secondary)
+    final_list = primary
 
-        new_list: List[str] = []
-        # pos keeps track of where we are in the primary list
-        pos = 0
-        queued_elements: List[str] = []
-        for elem in secondary:
+    if set(final_list) != all_unique_items:
+        raise RuntimeError("Failed to capture all items in original lists!?")
+    if not all_unique(final_list):
+        raise RuntimeError("Produced a final list with duplicates?!")
+    return final_list
 
-            # once we go beyond the primary list, every element is appended
-            if pos >= len(primary):
-                new_list += [elem]
-                continue
 
-            # otherwise, elements from secondary list are queued to be checked against primary
-            queued_elements += [elem]
+def all_unique(seq: Sequence[Any]) -> bool:
+    return len(set(seq)) == len(seq)
 
-            # unrecognized primary elements are passed along to the new list
-            if primary[pos] not in secondary:
-                new_list += [primary[pos]]
-                pos += 1
-                continue
 
-            # when a matching existing element is found, in goes the queue
-            if elem == primary[pos]:
-                new_list += queued_elements
-                queued_elements = []
-                pos += 1
-                continue
+def weave_lists(primary: List[str], secondary: List[str]) -> List[str]:
 
-            # else we continue with our growing queue
+    new_list: List[str] = []
+    # pos keeps track of where we are in the primary list
+    pos = 0
+    queued_elements: List[str] = []
+    for elem in secondary:
 
-        # now that we have gone through the loop, we might have lingering items
-        remaining_primary = primary[pos:]
-        remaining_secondary = queued_elements
-        # the easiest way to handle these is... to sort them together and append
-        if remaining_primary and remaining_secondary:
-            new_list += sort_variable_lists([remaining_primary, remaining_secondary])
-        elif remaining_primary or remaining_secondary:
-            new_list += [x for x in remaining_primary if x not in new_list]
-            new_list += [x for x in remaining_secondary if x not in new_list]
+        # once we go beyond the primary list, every element is appended
+        if pos >= len(primary):
+            new_list += [elem]
+            continue
 
-        # the final sorted list becomes the primary for the next round
-        primary = new_list
+        # otherwise, elements from secondary list are queued to be checked against primary
+        queued_elements += [elem]
 
-    assert set(primary) == all_unique_items
-    return primary
+        # unrecognized primary elements are passed along to the new list
+        if primary[pos] not in secondary:
+            new_list += [primary[pos]]
+            pos += 1
+            continue
+
+        # when a matching existing element is found, in goes the queue
+        if elem == primary[pos]:
+            new_list += queued_elements
+            queued_elements = []
+            pos += 1
+            continue
+
+        # else we continue with our growing queue
+
+    # now that we have gone through the loop, we might have lingering items
+    leftover_prim = primary[pos:]
+    leftover_seco = queued_elements
+    # the easiest way to handle these is... to sort them together and append
+    if leftover_prim and leftover_seco:
+        new_list += weave_lists(leftover_prim, leftover_seco)
+    else:
+        new_list += [x for x in (leftover_prim + leftover_seco) if x not in new_list]
+
+    # the final sorted list becomes the primary for the next round
+    return new_list

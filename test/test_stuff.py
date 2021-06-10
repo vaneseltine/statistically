@@ -182,7 +182,9 @@ def test_sort_variables(inlist, outlist):
     assert st.sort_variable_lists(inlist) == outlist
 
 
-@pytest.mark.xfail(reason="Harder to deal with misarranged lists...")
+@pytest.mark.xfail(
+    reason="Harder to deal with misarranged lists...", raises=AssertionError
+)
 @pytest.mark.parametrize(
     "inlist, outlist",
     [
@@ -193,6 +195,29 @@ def test_sort_variables(inlist, outlist):
             ],
             "egg spam bacon".split(),
         ),
+    ],
+)
+def test_accept_first_sort_of_missorted_variables(inlist, outlist):
+    assert st.sort_variable_lists(inlist) == outlist
+
+
+@pytest.mark.xfail(
+    reason="incompatible sort, with a before/after gf and gu", raises=RuntimeError
+)
+@pytest.mark.parametrize(
+    "inlist, outset",
+    [
+        (
+            [
+                "sr sb i N".split(),
+                "sr sb gf gu a u2 i9 iE i N".split(),
+                "sr sb gf gu a u2 i9 iE i N".split(),
+                "sr sb a sc.ar sc.ab gf gu u2 i9 iE i N".split(),
+                "sr sb gf gu zrf zru zbf zbu a u2 i9 iE i N".split(),
+                "sr sb gf gu zrf zru zbf zbu a u2 i9 iE i N".split(),
+            ],
+            "sr sb gf gu zrf zru zbf zbu a u2 i9 iE i N",
+        ),
         (
             [
                 "egg spam bacon".split(),
@@ -202,19 +227,18 @@ def test_sort_variables(inlist, outlist):
         ),
     ],
 )
-def test_sort_bad_variables(inlist, outlist):
-    assert st.sort_variable_lists(inlist) == outlist
+def test_wrongly_duplicating(inlist, outset):
+    assert set(st.sort_variable_lists(inlist)) == set(outset)
 
 
-@pytest.mark.xfail(reason="incompatible sort, with a before/after gf and gu")
-def test_wrongly_duplicating():
-    inlist = [
-        "sr sb i N".split(),
-        "sr sb gf gu a u2 i9 iE i N".split(),
-        "sr sb gf gu a u2 i9 iE i N".split(),
-        "sr sb a sc.ar sc.ab gf gu u2 i9 iE i N".split(),
-        "sr sb gf gu zrf zru zbf zbu a u2 i9 iE i N".split(),
-        "sr sb gf gu zrf zru zbf zbu a u2 i9 iE i N".split(),
-    ]
-    outlist = "sr sb gf gu zrf zru zbf zbu a u2 i9 iE i N"
-    assert st.sort_variable_lists(inlist) == outlist
+@pytest.mark.parametrize(
+    "inlist",
+    [
+        ["a b c d".split(), "a b c d e".split(), "a b c d e d".split()],
+        ["a b c d".split(), "a b c d e".split(), "a b c d e a".split()],
+        ["a a".split()],
+    ],
+)
+def test_raise_on_duplicates(inlist):
+    with pytest.raises(ValueError):
+        st.sort_variable_lists(inlist)
