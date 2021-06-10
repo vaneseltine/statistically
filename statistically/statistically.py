@@ -10,7 +10,7 @@ from typing import Any, Dict, Generator, List, Optional, Sequence, Tuple, Union,
 
 import pandas as pd
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 Lines = List[str]
 UserInput = str
