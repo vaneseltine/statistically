@@ -46,6 +46,4 @@ def test_summarize_does_not_cut_off():
     """
     loglines = (STATA_OUTPUT / "basic" / "summarize.txt").read_text().splitlines()
     df = st.Table(loglines).to_df()
-    print(df.columns)
-    print(df.size)
-    assert "Max" in list(df.columns)
+    assert "Max" in str(df)

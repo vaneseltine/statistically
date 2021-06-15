@@ -10,7 +10,7 @@ from typing import Any, Dict, Generator, List, Optional, Sequence, Tuple, Union,
 
 import pandas as pd
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 Lines = List[str]
 UserInput = str
@@ -233,6 +233,7 @@ class Table:
         # print(key_rows)
         final_rows = self.finalize_rows(key_rows)
         self.df = pd.DataFrame(final_rows, columns=column_names)
+        logging.getLogger().debug(f"DF: {self.df.shape}")
         # set_index("colname", verify_integrity=True)
 
     @classmethod
@@ -276,7 +277,6 @@ class Table:
     def clean_table_lines(cls, lines: Lines) -> Lines:
         range_slice = cls.determine_horizontal_range(lines)
         cut_lines = [l[range_slice] for l in lines]
-
         for row in (0, -1):
             if line_only.match(cut_lines[row]):
                 cut_lines.pop(row)
@@ -286,8 +286,9 @@ class Table:
     @classmethod
     def determine_horizontal_range(cls, lines: Lines) -> slice:
         line_matches = [line_horiz.search(l) for l in lines if line_horiz.search(l)]
+
         table_min = min(l.span()[0] for l in line_matches if l is not None)
-        table_max = max(l.span()[-1] for l in line_matches if l is not None)
+        table_max = max(l.span()[-1] + 1 for l in line_matches if l is not None)
         return slice(table_min, table_max)
 
     @classmethod
