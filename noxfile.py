@@ -4,9 +4,11 @@
 
 import json
 import re
+import shutil
 import subprocess
 import urllib.request
 from pathlib import Path
+from socket import gethostname
 
 import nox
 
@@ -17,6 +19,7 @@ PACKAGE_NAME = "statistically"
 MODULE_DEFINING_VERSION = "./statistically/statistically.py"
 VERSION_PATTERN = r"(\d+\.\d+\.[0-9a-z_-]+)"
 DIST_DIR = Path("./dist/")
+DEPLOYABLES = ["makeout-point"]
 
 
 def supported_pythons(classifiers_in="setup.cfg"):
@@ -137,15 +140,17 @@ def test_coverage(session):
     print(f"Coverage at {output}")
 
 
-# @nox.session(python=False)
-# def deploy_to_pypi(session):
-#     if not pypi_needs_new_version():
-#         session.skip("PyPI already up to date")
-#     print("Current version is ready to deploy to PyPI.")
-#     shutil.rmtree(DIST_DIR, ignore_errors=True)
-#     DIST_DIR.mkdir()
-#     session.run("python", "setup.py", "sdist", "bdist_wheel", f"--dist-dir={DIST_DIR}")
-#     session.run("python", "-m", "twine", "upload", str(DIST_DIR.joinpath("*")))
+@nox.session(python=False)
+def deploy_to_pypi(session):
+    if not pypi_needs_new_version():
+        session.skip("PyPI already up to date")
+    if not gethostname() in DEPLOYABLES:
+        session.skip(f"Not deploying from this machine ({gethostname()})")
+    print("Current version is ready to deploy to PyPI.")
+    shutil.rmtree(DIST_DIR, ignore_errors=True)
+    DIST_DIR.mkdir()
+    session.run("python", "setup.py", "sdist", "bdist_wheel", f"--dist-dir={DIST_DIR}")
+    session.run("python", "-m", "twine", "upload", str(DIST_DIR.joinpath("*")))
 
 
 @nox.session(python=False)
