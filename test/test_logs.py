@@ -3,7 +3,7 @@ import pytest
 
 from statistically import statistically as st
 
-from . import STATA_OUTPUT
+from . import STATA_OUTPUT, get_log_dfs
 
 
 @pytest.mark.parametrize("log", [*STATA_OUTPUT.glob("**/*.txt")])
@@ -29,14 +29,12 @@ def test_estat_vif_with_interaction():
     # assert 12 <= len(t.to_df()) <= 16
 
 
-@pytest.mark.xfail(reason="Need to improve group var handling in margins")
 def test_nested_variables():
     """
     The way Stata subtly positions headings on i.vars
     Makes it difficult to capture the difference when multiple things are represented
     """
-    loglines = (STATA_OUTPUT / "basic" / "margins4.txt").read_text().splitlines()
-    df = st.Table(loglines).to_df()
+    df = get_log_dfs("margins4")[0]
     assert "group = 1" in str(df)
 
 
@@ -44,6 +42,5 @@ def test_summarize_does_not_cut_off():
     """
     We were dropping the final character on the right end.
     """
-    loglines = (STATA_OUTPUT / "basic" / "summarize.txt").read_text().splitlines()
-    df = st.Table(loglines).to_df()
+    df = get_log_dfs("summarize")[0]
     assert "Max" in str(df)
