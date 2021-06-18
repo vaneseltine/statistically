@@ -14,5 +14,6 @@ mypy
 pandas-stubs
 
 pytest
+pytest-randomly
 coverage
 coveralls[yaml]
